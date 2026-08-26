@@ -180,6 +180,56 @@
       "snowflake": {"target": "NUMBER", "carry_args": true}
     },
 
+    "NUMBER": {
+      "tsql": {"target": "NUMBER", "carry_args": true, "review": "Mapped from Oracle/HANA NUMBER when encountered as base type."},
+      "mysql": {"target": "DECIMAL", "carry_args": true},
+      "oracle": {"target": "NUMBER", "carry_args": true},
+      "postgresql": {"target": "NUMERIC", "carry_args": true},
+      "db2": {"target": "DECIMAL", "carry_args": true},
+      "hana": {"target": "NUMBER", "carry_args": true},
+      "snowflake": {"target": "NUMBER", "carry_args": true}
+    },
+
+    "VARCHAR2": {
+      "tsql": {"target": "VARCHAR", "carry_args": true},
+      "mysql": {"target": "VARCHAR", "carry_args": true},
+      "oracle": {"target": "VARCHAR2", "carry_args": true},
+      "postgresql": {"target": "VARCHAR", "carry_args": true},
+      "db2": {"target": "VARCHAR", "carry_args": true},
+      "hana": {"target": "VARCHAR", "carry_args": true},
+      "snowflake": {"target": "VARCHAR", "carry_args": true}
+    },
+
+    "BOOLEAN": {
+      "tsql": {"target": "BOOLEAN", "review": "T-SQL typically uses BIT; BOOLEAN columns are rare but mapped if present."},
+      "mysql": {"target": "BOOLEAN"},
+      "oracle": {"target": "NUMBER(1,0)", "review": "Oracle does not support BOOLEAN as a column type in SQL; often represented as NUMBER(1,0) or CHAR(1)."},
+      "postgresql": {"target": "BOOLEAN"},
+      "db2": {"target": "SMALLINT", "review": "DB2 often models boolean as SMALLINT or CHAR(1)."},
+      "hana": {"target": "BOOLEAN"},
+      "snowflake": {"target": "BOOLEAN"}
+    },
+
+    "TIMESTAMP": {
+      "tsql": {"target": "TIMESTAMP"},
+      "mysql": {"target": "TIMESTAMP"},
+      "oracle": {"target": "TIMESTAMP", "review": "Oracle TIMESTAMP behavior differs from DATE; confirm precision."},
+      "postgresql": {"target": "TIMESTAMP"},
+      "db2": {"target": "TIMESTAMP"},
+      "hana": {"target": "TIMESTAMP"},
+      "snowflake": {"target": "TIMESTAMP"}
+    },
+
+    "SERIAL": {
+      "tsql": {"target": "INTEGER", "review": "T-SQL has no SERIAL; map to INTEGER and add identity handling separately."},
+      "mysql": {"target": "INTEGER", "review": "MySQL AUTO_INCREMENT is preferred; SERIAL maps to INTEGER with AUTO_INCREMENT behavior."},
+      "oracle": {"target": "NUMBER(10,0)", "review": "Oracle uses sequences; SERIAL mapped to NUMBER."},
+      "postgresql": {"target": "SERIAL", "review": "Postgres SERIAL should be converted to a sequence or IDENTITY/AUTOINCREMENT on target."},
+      "db2": {"target": "INTEGER"},
+      "hana": {"target": "INTEGER"},
+      "snowflake": {"target": "INTEGER", "review": "SERIAL is sequence-backed; convert to AUTOINCREMENT or recreate sequence+default in Snowflake."}
+    },
+
     "FLOAT": {
       "tsql": {"target": "FLOAT"},
       "mysql": {"target": "FLOAT"},

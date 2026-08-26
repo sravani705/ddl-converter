@@ -2,6 +2,7 @@ import os
 import json
 import requests
 import streamlit as st
+import re
 
 from converter_to_snowflake import convert_to_snowflake
 
@@ -132,12 +133,25 @@ def main():
                 else:
                     st.write("(none)")
 
-            with st.expander("Manual review items"):
-                if res.manual_review:
-                    for m in res.manual_review:
-                        st.write(f"- {m}")
-                else:
-                    st.write("(none)")
+            # Only show manual-review items if the converted DDL differs from input
+            try:
+                src = sql_text or ""
+                tgt = res.snowflake_ddl or ""
+            except Exception:
+                src = ""
+                tgt = ""
+
+            # Normalize whitespace before comparing to avoid spurious differences
+            def _norm(s: str) -> str:
+                return re.sub(r"\s+", " ", (s or "")).strip()
+
+            if _norm(tgt) != _norm(src):
+                with st.expander("Manual review items"):
+                    if res.manual_review:
+                        for m in res.manual_review:
+                            st.write(f"- {m}")
+                    else:
+                        st.write("(none)")
 
             # SQLGlot normalization (optional)
             if enable_sqlglot:

@@ -15,6 +15,7 @@ Wraps converter_multi_dialect.py with Snowflake as fixed target.
 """
 
 from converter_multi_dialect import convert as multi_dialect_convert, ConversionResult, SUPPORTED_DIALECTS
+import re
 
 TARGET_DIALECT = "snowflake"
 VALID_SOURCE_DIALECTS = ["tsql", "mysql", "oracle", "postgresql", "db2", "hana"]
@@ -138,9 +139,17 @@ if __name__ == "__main__":
         else:
             print("Transformations: (none)")
 
-        if result.manual_review:
-            print("\nManual Review Items:")
-            for m in result.manual_review:
-                print(f"  ! {m}")
-        else:
-            print("Manual Review Items: (none)")
+        # Only print manual-review items when converted DDL differs from input
+        src = sql or ""
+        tgt = result.snowflake_ddl or ""
+
+        def _norm(s: str) -> str:
+            return re.sub(r"\s+", " ", (s or "")).strip()
+
+        if _norm(tgt) != _norm(src):
+            if result.manual_review:
+                print("\nManual Review Items:")
+                for m in result.manual_review:
+                    print(f"  ! {m}")
+            else:
+                print("Manual Review Items: (none)")

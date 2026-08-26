@@ -16,6 +16,7 @@ Output always has three sections:
 """
 import argparse
 import sys
+import re
 
 from converter_to_snowflake import convert_to_snowflake
 
@@ -77,7 +78,7 @@ def main():
             f.write(result.snowflake_ddl + "\n")
 
     print("=" * 80)
-    print(f"CONVERSION: {args.source.upper()} → SNOWFLAKE")
+    print(f"CONVERSION: {args.source.upper()} -> SNOWFLAKE")
     print("=" * 80)
 
     print("\n" + "=" * 80)
@@ -94,14 +95,27 @@ def main():
     else:
         print("  (none)")
 
-    print("\n" + "=" * 80)
-    print(f"MANUAL REVIEW REQUIRED ({len(result.manual_review)})")
-    print("=" * 80)
-    if result.manual_review:
-        for r in result.manual_review:
-            print(f"  ! {r}")
-    else:
-        print("  (none)")
+    # Only display manual-review section when converted DDL differs from source
+    try:
+        src_text = sql_text or ""
+    except Exception:
+        src_text = ""
+
+    tgt_text = result.snowflake_ddl or ""
+
+    # normalize whitespace to avoid showing manual-review when only formatting differs
+    def _norm(s: str) -> str:
+        return re.sub(r"\s+", " ", (s or "")).strip()
+
+    if _norm(tgt_text) != _norm(src_text):
+        print("\n" + "=" * 80)
+        print(f"MANUAL REVIEW REQUIRED ({len(result.manual_review)})")
+        print("=" * 80)
+        if result.manual_review:
+            for r in result.manual_review:
+                print(f"  ! {r}")
+        else:
+            print("  (none)")
 
 
 if __name__ == "__main__":

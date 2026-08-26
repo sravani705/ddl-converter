@@ -1,10 +1,21 @@
-# SQL Server -> Snowflake DDL Conversion Agent
+# Multi-Source SQL → Snowflake DDL Converter
 
-Converts `CREATE TABLE` statements written for SQL Server into equivalent
-Snowflake DDL. Built to the four-phase spec: a rules-driven conversion
-engine (not "ask the LLM and hope"), a structured mappings library, a
-20-30 case regression test suite, and a hard rule that anything ambiguous
-or platform-divergent is flagged for **manual review** instead of guessed.
+Converts `CREATE TABLE` statements from **any SQL dialect** into equivalent
+Snowflake DDL. Supports sources: SQL Server, MySQL, Oracle, PostgreSQL, DB2,
+and SAP HANA. Built on a rules-driven conversion engine (not "ask the LLM and hope"),
+with structured mappings, a 20-30 case regression test suite, and a hard rule 
+that anything ambiguous or platform-divergent is flagged for **manual review**.
+
+### Supported Source Dialects
+
+- **SQL Server (T-SQL)** - `tsql`
+- **MySQL** - `mysql`
+- **Oracle Database** - `oracle`
+- **PostgreSQL** - `postgresql`
+- **IBM DB2** - `db2`
+- **SAP HANA** - `hana`
+
+**Target:** Always Snowflake
 
 ## Files
 

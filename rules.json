@@ -18,6 +18,15 @@
     "TEXT":             { "target": "VARCHAR", "fixed_args": "16777216", "review": "TEXT is deprecated in SQL Server. Mapped to Snowflake's max VARCHAR size (16MB); confirm this is large enough / actually needed." },
     "NTEXT":            { "target": "VARCHAR", "fixed_args": "16777216", "review": "NTEXT is deprecated in SQL Server. Mapped to Snowflake's max VARCHAR size (16MB); confirm this is large enough / actually needed." },
 
+    "BOOLEAN":          { "target": "BOOLEAN" },
+    "BOOL":             { "target": "BOOLEAN", "review": "Some dialects (e.g. MySQL) use TINYINT(1) for BOOLEAN; ensure 0/1 values are interpreted as FALSE/TRUE when migrating." },
+
+    "NUMBER":           { "target": "NUMBER", "carry_args": true, "review": "Oracle/HANA NUMBER -> Snowflake NUMBER; preserve precision/scale when present." },
+    "VARCHAR2":         { "target": "VARCHAR", "carry_args": true, "review": "Oracle VARCHAR2 -> Snowflake VARCHAR mapping; preserve length if provided." },
+    "SERIAL":           { "target": "INTEGER", "review": "Postgres SERIAL is a sequence-backed integer; map to INTEGER and convert autoincrement semantics to Snowflake AUTOINCREMENT where appropriate." },
+    "DOUBLE PRECISION": { "target": "FLOAT" },
+    "DOUBLE":           { "target": "FLOAT" },
+
     "DATETIME":         { "target": "TIMESTAMP" },
     "DATETIME2":        { "target": "TIMESTAMP" },
     "SMALLDATETIME":    { "target": "TIMESTAMP" },
