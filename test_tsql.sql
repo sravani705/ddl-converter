@@ -1,5 +1,0 @@
-CREATE TABLE dbo.Products (
-    ProductID INT IDENTITY(1,1) PRIMARY KEY,
-    ProductName VARCHAR(255) NOT NULL,
-    CreatedDate DATETIME DEFAULT GETDATE()
-);
