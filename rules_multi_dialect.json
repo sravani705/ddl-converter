@@ -1,578 +1,2177 @@
 {
   "_comment": "Multi-dialect SQL DDL conversion rules. Supports MySQL, SQL Server, Oracle, PostgreSQL, IBM DB2, SAP HANA, Snowflake as source and/or target dialects. Each mapping specifies how a type/function is handled per dialect pair.",
-
   "metadata": {
     "version": "2.0",
-    "supported_dialects": ["tsql", "mysql", "oracle", "postgresql", "db2", "hana", "snowflake"],
+    "supported_dialects": [
+      "tsql",
+      "mysql",
+      "oracle",
+      "postgresql",
+      "db2",
+      "hana",
+      "snowflake"
+    ],
     "description": "Rules-driven conversion engine supporting multiple SQL dialects"
   },
-
   "type_mappings": {
     "_comment": "key = common base type (uppercase, dialect-agnostic). target = {dialect: {target_type, carry_args, fixed_args, review}}",
-
     "INT": {
-      "tsql": {"target": "INT"},
-      "mysql": {"target": "INTEGER"},
-      "oracle": {"target": "NUMBER(10,0)"},
-      "postgresql": {"target": "INTEGER"},
-      "db2": {"target": "INTEGER"},
-      "hana": {"target": "INTEGER"},
-      "snowflake": {"target": "INTEGER"}
+      "tsql": {
+        "target": "INT"
+      },
+      "mysql": {
+        "target": "INTEGER"
+      },
+      "oracle": {
+        "target": "NUMBER(10,0)"
+      },
+      "postgresql": {
+        "target": "INTEGER"
+      },
+      "db2": {
+        "target": "INTEGER"
+      },
+      "hana": {
+        "target": "INTEGER"
+      },
+      "snowflake": {
+        "target": "INTEGER"
+      }
     },
-
     "INTEGER": {
-      "tsql": {"target": "INTEGER"},
-      "mysql": {"target": "INT"},
-      "oracle": {"target": "NUMBER(10,0)"},
-      "postgresql": {"target": "INTEGER"},
-      "db2": {"target": "INTEGER"},
-      "hana": {"target": "INTEGER"},
-      "snowflake": {"target": "INTEGER"}
+      "tsql": {
+        "target": "INTEGER"
+      },
+      "mysql": {
+        "target": "INT"
+      },
+      "oracle": {
+        "target": "NUMBER(10,0)"
+      },
+      "postgresql": {
+        "target": "INTEGER"
+      },
+      "db2": {
+        "target": "INTEGER"
+      },
+      "hana": {
+        "target": "INTEGER"
+      },
+      "snowflake": {
+        "target": "INTEGER"
+      }
     },
-
     "BIGINT": {
-      "tsql": {"target": "BIGINT"},
-      "mysql": {"target": "BIGINT"},
-      "oracle": {"target": "NUMBER(19,0)"},
-      "postgresql": {"target": "BIGINT"},
-      "db2": {"target": "BIGINT"},
-      "hana": {"target": "BIGINT"},
-      "snowflake": {"target": "BIGINT"}
+      "tsql": {
+        "target": "BIGINT"
+      },
+      "mysql": {
+        "target": "BIGINT"
+      },
+      "oracle": {
+        "target": "NUMBER(19,0)"
+      },
+      "postgresql": {
+        "target": "BIGINT"
+      },
+      "db2": {
+        "target": "BIGINT"
+      },
+      "hana": {
+        "target": "BIGINT"
+      },
+      "snowflake": {
+        "target": "BIGINT"
+      }
     },
-
     "SMALLINT": {
-      "tsql": {"target": "SMALLINT"},
-      "mysql": {"target": "SMALLINT"},
-      "oracle": {"target": "NUMBER(5,0)"},
-      "postgresql": {"target": "SMALLINT"},
-      "db2": {"target": "SMALLINT"},
-      "hana": {"target": "SMALLINT"},
-      "snowflake": {"target": "SMALLINT"}
+      "tsql": {
+        "target": "SMALLINT"
+      },
+      "mysql": {
+        "target": "SMALLINT"
+      },
+      "oracle": {
+        "target": "NUMBER(5,0)"
+      },
+      "postgresql": {
+        "target": "SMALLINT"
+      },
+      "db2": {
+        "target": "SMALLINT"
+      },
+      "hana": {
+        "target": "SMALLINT"
+      },
+      "snowflake": {
+        "target": "SMALLINT"
+      }
     },
-
     "TINYINT": {
-      "tsql": {"target": "TINYINT", "review": "SQL Server TINYINT is unsigned 0-255; other databases have no exact equivalent. Choose appropriate target type and add range CHECK if needed."},
-      "mysql": {"target": "INTEGER"},
-      "oracle": {"target": "NUMBER(3,0)", "review": "Oracle has no TINYINT; mapped to NUMBER(3,0)."},
-      "postgresql": {"target": "SMALLINT", "review": "PostgreSQL has no TINYINT; mapped to SMALLINT."},
-      "db2": {"target": "SMALLINT", "review": "DB2 has no TINYINT; mapped to SMALLINT."},
-      "hana": {"target": "NUMBER(3,0)", "review": "HANA TINYINT mapped to NUMBER(3,0) per rules."},
-      "snowflake": {"target": "SMALLINT", "review": "Snowflake has no unsigned types; mapped to SMALLINT."}
+      "tsql": {
+        "target": "TINYINT",
+        "review": "SQL Server TINYINT is unsigned 0-255; other databases have no exact equivalent. Choose appropriate target type and add range CHECK if needed."
+      },
+      "mysql": {
+        "target": "INTEGER"
+      },
+      "oracle": {
+        "target": "NUMBER(3,0)",
+        "review": "Oracle has no TINYINT; mapped to NUMBER(3,0)."
+      },
+      "postgresql": {
+        "target": "SMALLINT",
+        "review": "PostgreSQL has no TINYINT; mapped to SMALLINT."
+      },
+      "db2": {
+        "target": "SMALLINT",
+        "review": "DB2 has no TINYINT; mapped to SMALLINT."
+      },
+      "hana": {
+        "target": "TINYINT"
+      },
+      "snowflake": {
+        "target": "SMALLINT",
+        "review": "Snowflake has no unsigned types; mapped to SMALLINT."
+      },
+      "hana->snowflake": {
+        "target": "NUMBER(3,0)",
+        "review": "SAP HANA TINYINT (0-255) mapped to Snowflake NUMBER(3,0)."
+      }
     },
-
     "BIT": {
-      "tsql": {"target": "BIT"},
-      "mysql": {"target": "BIT"},
-      "oracle": {"target": "NUMBER(1,0)", "review": "Oracle uses NUMBER(1,0) for boolean-like values."},
-      "postgresql": {"target": "BOOLEAN"},
-      "db2": {"target": "SMALLINT", "review": "DB2 uses SMALLINT for boolean values."},
-      "hana": {"target": "BOOLEAN"},
-      "snowflake": {"target": "BOOLEAN"}
+      "tsql": {
+        "target": "BIT"
+      },
+      "mysql": {
+        "target": "BIT"
+      },
+      "oracle": {
+        "target": "NUMBER(1,0)",
+        "review": "Oracle uses NUMBER(1,0) for boolean-like values."
+      },
+      "postgresql": {
+        "target": "BOOLEAN"
+      },
+      "db2": {
+        "target": "SMALLINT",
+        "review": "DB2 uses SMALLINT for boolean values."
+      },
+      "hana": {
+        "target": "BOOLEAN"
+      },
+      "snowflake": {
+        "target": "BOOLEAN"
+      }
     },
-
-    "VARCHAR": {
-      "tsql": {"target": "VARCHAR", "carry_args": true},
-      "mysql": {"target": "VARCHAR", "carry_args": true},
-      "oracle": {"target": "VARCHAR2", "carry_args": true},
-      "postgresql": {"target": "VARCHAR", "carry_args": true},
-      "db2": {"target": "VARCHAR", "carry_args": true},
-      "hana": {"target": "VARCHAR", "carry_args": true},
-      "snowflake": {"target": "VARCHAR", "carry_args": true}
-    },
-
-    "NVARCHAR": {
-      "tsql": {"target": "NVARCHAR", "carry_args": true, "max_alias": "MAX"},
-      "mysql": {"target": "VARCHAR", "carry_args": true, "review": "MySQL VARCHAR is already Unicode; NVARCHAR is not a distinct type."},
-      "oracle": {"target": "NVARCHAR2", "carry_args": true},
-      "postgresql": {"target": "VARCHAR", "carry_args": true},
-      "db2": {"target": "VARCHAR", "carry_args": true},
-      "hana": {"target": "NVARCHAR", "carry_args": true},
-      "snowflake": {"target": "VARCHAR", "carry_args": true}
-    },
-
-    "CHAR": {
-      "tsql": {"target": "REAL", "review": "REAL is 32-bit; precision may differ across databases."},
-      "mysql": {"target": "FLOAT"},
-      "oracle": {"target": "FLOAT"},
-      "postgresql": {"target": "FLOAT"},
-      "db2": {"target": "REAL"},
-      "hana": {"target": "REAL"},
-      "snowflake": {"target": "FLOAT", "review": "Snowflake FLOAT is 64-bit double; different precision than SQL Server REAL."}
-    },
-
-    "NCHAR": {
-      "tsql": {"target": "NCHAR", "carry_args": true},
-      "mysql": {"target": "CHAR", "carry_args": true},
-      "oracle": {"target": "NCHAR", "carry_args": true},
-      "postgresql": {"target": "CHAR", "carry_args": true},
-      "db2": {"target": "CHAR", "carry_args": true},
-      "hana": {"target": "NCHAR", "carry_args": true},
-      "snowflake": {"target": "CHAR", "carry_args": true}
-    },
-
-    "TEXT": {
-      "tsql": {"target": "VARCHAR", "fixed_args": "MAX", "review": "TEXT is deprecated; mapped to max VARCHAR."},
-      "mysql": {"target": "VARCHAR", "review": "MySQL TEXT mapped to Snowflake VARCHAR"},
-      "oracle": {"target": "CLOB", "review": "Oracle CLOBs have different semantics than TEXT."},
-      "postgresql": {"target": "TEXT"},
-      "db2": {"target": "CLOB", "review": "DB2 CLOBs require different handling."},
-      "hana": {"target": "NCLOB"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216"}
-    },
-
-    "LONGTEXT": {
-      "tsql": {"target": "VARCHAR", "fixed_args": "MAX"},
-      "mysql": {"target": "VARCHAR", "review": "LONGTEXT mapped to VARCHAR (may require large size)."},
-      "oracle": {"target": "CLOB"},
-      "postgresql": {"target": "TEXT"},
-      "db2": {"target": "CLOB"},
-      "hana": {"target": "NCLOB"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216"}
-    },
-
-    "JSON": {
-      "tsql": {"target": "VARIANT", "review": "SQL Server uses JSON as text; map to VARIANT for semi-structured data."},
-      "mysql": {"target": "VARIANT"},
-      "oracle": {"target": "JSON", "review": "Oracle JSON storage differs."},
-      "postgresql": {"target": "JSONB"},
-      "db2": {"target": "CLOB", "review": "DB2 JSON handling varies."},
-      "hana": {"target": "VARIANT"},
-      "snowflake": {"target": "VARIANT"}
-    },
-
-    "BLOB": {
-      "tsql": {"target": "VARBINARY", "carry_args": true},
-      "mysql": {"target": "BINARY", "carry_args": true},
-      "oracle": {"target": "BLOB"},
-      "postgresql": {"target": "BYTEA"},
-      "db2": {"target": "BLOB"},
-      "hana": {"target": "BLOB"},
-      "snowflake": {"target": "BINARY", "carry_args": true}
-    },
-
-    "DATETIME": {
-      "tsql": {"target": "DATETIME"},
-      "mysql": {"target": "TIMESTAMP_NTZ"},
-      "oracle": {"target": "DATE", "review": "Oracle DATE includes time; behavior differs from SQL Server DATETIME."},
-      "postgresql": {"target": "TIMESTAMP"},
-      "db2": {"target": "TIMESTAMP"},
-      "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP_NTZ"}
-    },
-
-    "DATETIME2": {
-      "tsql": {"target": "DATETIME2"},
-      "mysql": {"target": "DATETIME"},
-      "oracle": {"target": "TIMESTAMP"},
-      "postgresql": {"target": "TIMESTAMP"},
-      "db2": {"target": "TIMESTAMP"},
-      "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP"}
-    },
-
-    "DATE": {
-      "tsql": {"target": "DATE"},
-      "mysql": {"target": "DATE"},
-      "oracle": {"target": "TIMESTAMP_NTZ", "review": "Oracle DATE includes time; map to TIMESTAMP_NTZ in Snowflake to preserve time component."},
-      "postgresql": {"target": "DATE"},
-      "db2": {"target": "DATE"},
-      "hana": {"target": "DATE"},
-      "snowflake": {"target": "DATE"}
-    },
-
-    "TIME": {
-      "tsql": {"target": "TIME"},
-      "mysql": {"target": "TIME"},
-      "oracle": {"target": "INTERVAL DAY TO SECOND", "review": "Oracle uses INTERVAL for time representation."},
-      "postgresql": {"target": "TIME"},
-      "db2": {"target": "TIME"},
-      "hana": {"target": "TIME"},
-      "snowflake": {"target": "TIME"}
-    },
-
-    "DECIMAL": {
-      "tsql": {"target": "DECIMAL", "carry_args": true},
-      "mysql": {"target": "DECIMAL", "carry_args": true},
-      "oracle": {"target": "NUMBER", "carry_args": true},
-      "postgresql": {"target": "NUMERIC", "carry_args": true},
-      "db2": {"target": "DECIMAL", "carry_args": true},
-      "hana": {"target": "DECIMAL", "carry_args": true},
-      "snowflake": {"target": "NUMBER", "carry_args": true}
-    },
-
-    "NUMERIC": {
-      "tsql": {"target": "NUMERIC", "carry_args": true},
-      "mysql": {"target": "DECIMAL", "carry_args": true},
-      "oracle": {"target": "NUMBER", "carry_args": true},
-      "postgresql": {"target": "NUMERIC", "carry_args": true},
-      "db2": {"target": "DECIMAL", "carry_args": true},
-      "hana": {"target": "DECIMAL", "carry_args": true},
-      "snowflake": {"target": "NUMBER", "carry_args": true}
-    },
-
-    "NUMBER": {
-      "tsql": {"target": "NUMBER", "carry_args": true, "review": "Mapped from Oracle/HANA NUMBER when encountered as base type."},
-      "mysql": {"target": "DECIMAL", "carry_args": true},
-      "oracle": {"target": "NUMBER", "carry_args": true},
-      "postgresql": {"target": "NUMERIC", "carry_args": true},
-      "db2": {"target": "DECIMAL", "carry_args": true},
-      "hana": {"target": "NUMBER", "carry_args": true},
-      "snowflake": {"target": "NUMBER", "carry_args": true}
-    },
-
-    "VARCHAR2": {
-      "tsql": {"target": "VARCHAR", "carry_args": true},
-      "mysql": {"target": "VARCHAR", "carry_args": true},
-      "oracle": {"target": "VARCHAR2", "carry_args": true},
-      "postgresql": {"target": "VARCHAR", "carry_args": true},
-      "db2": {"target": "VARCHAR", "carry_args": true},
-      "hana": {"target": "VARCHAR", "carry_args": true},
-      "snowflake": {"target": "VARCHAR", "carry_args": true}
-    },
-
     "BOOLEAN": {
-      "tsql": {"target": "BOOLEAN", "review": "T-SQL typically uses BIT; BOOLEAN columns are rare but mapped if present."},
-      "mysql": {"target": "BOOLEAN"},
-      "oracle": {"target": "NUMBER(1,0)", "review": "Oracle does not support BOOLEAN as a column type in SQL; often represented as NUMBER(1,0) or CHAR(1)."},
-      "postgresql": {"target": "BOOLEAN"},
-      "db2": {"target": "SMALLINT", "review": "DB2 often models boolean as SMALLINT or CHAR(1)."},
-      "hana": {"target": "BOOLEAN"},
-      "snowflake": {"target": "BOOLEAN"}
+      "tsql": {
+        "target": "BOOLEAN",
+        "review": "T-SQL typically uses BIT; BOOLEAN columns are rare but mapped if present."
+      },
+      "mysql": {
+        "target": "BOOLEAN"
+      },
+      "oracle": {
+        "target": "NUMBER(1,0)",
+        "review": "Oracle does not support BOOLEAN as a column type in SQL; often represented as NUMBER(1,0) or CHAR(1)."
+      },
+      "postgresql": {
+        "target": "BOOLEAN"
+      },
+      "db2": {
+        "target": "SMALLINT",
+        "review": "DB2 often models boolean as SMALLINT or CHAR(1)."
+      },
+      "hana": {
+        "target": "BOOLEAN"
+      },
+      "snowflake": {
+        "target": "BOOLEAN"
+      }
     },
-
+    "VARCHAR": {
+      "tsql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "VARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true
+      }
+    },
+    "NVARCHAR": {
+      "tsql": {
+        "target": "NVARCHAR",
+        "carry_args": true,
+        "max_alias": "MAX"
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true,
+        "review": "MySQL VARCHAR is already Unicode; NVARCHAR is not a distinct type."
+      },
+      "oracle": {
+        "target": "NVARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "NVARCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true
+      }
+    },
+    "VARCHAR2": {
+      "tsql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "VARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true
+      }
+    },
+    "NVARCHAR2": {
+      "tsql": {
+        "target": "NVARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "NVARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARGRAPHIC",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "NVARCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true,
+        "review": "Oracle NVARCHAR2 mapped to Snowflake VARCHAR."
+      }
+    },
+    "CHAR": {
+      "tsql": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "CHAR",
+        "carry_args": true
+      }
+    },
+    "NCHAR": {
+      "tsql": {
+        "target": "NCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "NCHAR",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "CHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "NCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "CHAR",
+        "carry_args": true
+      }
+    },
+    "ALPHANUM": {
+      "tsql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "VARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "ALPHANUM",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true,
+        "review": "SAP HANA ALPHANUM (alphanumeric text) mapped to Snowflake VARCHAR."
+      }
+    },
+    "SHORTTEXT": {
+      "tsql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "VARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "SHORTTEXT",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true,
+        "review": "SAP HANA SHORTTEXT mapped to Snowflake VARCHAR."
+      }
+    },
+    "TEXT": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "MAX",
+        "review": "TEXT is deprecated; mapped to max VARCHAR."
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "review": "MySQL TEXT mapped to Snowflake VARCHAR"
+      },
+      "oracle": {
+        "target": "CLOB",
+        "review": "Oracle CLOBs have different semantics than TEXT."
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "CLOB",
+        "review": "DB2 CLOBs require different handling."
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "16777216"
+      }
+    },
+    "LONGTEXT": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "VARCHAR",
+        "review": "LONGTEXT mapped to VARCHAR (may require large size)."
+      },
+      "oracle": {
+        "target": "CLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "CLOB"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "16777216"
+      }
+    },
+    "CLOB": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "LONGTEXT"
+      },
+      "oracle": {
+        "target": "CLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "CLOB"
+      },
+      "hana": {
+        "target": "CLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "review": "CLOB mapped to Snowflake VARCHAR (max 16MB)."
+      }
+    },
+    "NCLOB": {
+      "tsql": {
+        "target": "NVARCHAR",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "LONGTEXT"
+      },
+      "oracle": {
+        "target": "NCLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "DBCLOB"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "review": "NCLOB mapped to Snowflake VARCHAR (max 16MB)."
+      }
+    },
+    "DBCLOB": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "16777216"
+      },
+      "mysql": {
+        "target": "VARCHAR"
+      },
+      "oracle": {
+        "target": "CLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "DBCLOB"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "16777216",
+        "review": "DB CLOBs mapped to large VARCHAR in Snowflake; confirm size."
+      }
+    },
+    "LONG VARCHAR": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "VARCHAR"
+      },
+      "oracle": {
+        "target": "CLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "LONG VARCHAR"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "16777216",
+        "review": "Map long text to large VARCHAR."
+      }
+    },
+    "JSON": {
+      "tsql": {
+        "target": "VARIANT",
+        "review": "SQL Server uses JSON as text; map to VARIANT for semi-structured data."
+      },
+      "mysql": {
+        "target": "VARIANT"
+      },
+      "oracle": {
+        "target": "JSON",
+        "review": "Oracle JSON storage differs."
+      },
+      "postgresql": {
+        "target": "JSONB"
+      },
+      "db2": {
+        "target": "CLOB",
+        "review": "DB2 JSON handling varies."
+      },
+      "hana": {
+        "target": "VARIANT"
+      },
+      "snowflake": {
+        "target": "VARIANT",
+        "review": "JSON data mapped to Snowflake semi-structured VARIANT."
+      }
+    },
+    "JSONB": {
+      "tsql": {
+        "target": "VARIANT"
+      },
+      "mysql": {
+        "target": "VARIANT"
+      },
+      "oracle": {
+        "target": "JSON"
+      },
+      "postgresql": {
+        "target": "JSONB"
+      },
+      "db2": {
+        "target": "CLOB"
+      },
+      "hana": {
+        "target": "VARIANT"
+      },
+      "snowflake": {
+        "target": "VARIANT"
+      }
+    },
+    "BLOB": {
+      "tsql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "BINARY",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "BLOB"
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "BLOB"
+      },
+      "hana": {
+        "target": "BLOB"
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "review": "BLOB mapped to Snowflake BINARY (max 8MB)."
+      }
+    },
+    "RAW": {
+      "tsql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "RAW",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "VARCHAR FOR BIT DATA",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "carry_args": true,
+        "review": "Oracle RAW binary data mapped to Snowflake BINARY."
+      }
+    },
+    "VARBINARY": {
+      "tsql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "RAW",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "VARCHAR FOR BIT DATA",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "carry_args": true
+      }
+    },
+    "BINARY": {
+      "tsql": {
+        "target": "BINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "BINARY",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "RAW",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "CHAR FOR BIT DATA",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "BINARY",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "carry_args": true
+      }
+    },
+    "BYTEA": {
+      "tsql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "BINARY",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "BLOB"
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "BLOB"
+      },
+      "hana": {
+        "target": "BINARY"
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "carry_args": true
+      }
+    },
+    "IMAGE": {
+      "tsql": {
+        "target": "VARBINARY",
+        "fixed_args": "MAX",
+        "review": "IMAGE is deprecated in SQL Server."
+      },
+      "mysql": {
+        "target": "LONGBLOB"
+      },
+      "oracle": {
+        "target": "BLOB",
+        "review": "Oracle BLOB has different semantics."
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "BLOB"
+      },
+      "hana": {
+        "target": "BLOB"
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "fixed_args": "8388608"
+      }
+    },
+    "DATETIME": {
+      "tsql": {
+        "target": "DATETIME"
+      },
+      "mysql": {
+        "target": "TIMESTAMP_NTZ"
+      },
+      "oracle": {
+        "target": "DATE",
+        "review": "Oracle DATE includes time; behavior differs from SQL Server DATETIME."
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "TIMESTAMP"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_NTZ"
+      }
+    },
+    "DATETIME2": {
+      "tsql": {
+        "target": "DATETIME2"
+      },
+      "mysql": {
+        "target": "DATETIME"
+      },
+      "oracle": {
+        "target": "TIMESTAMP"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "TIMESTAMP"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP"
+      }
+    },
+    "DATE": {
+      "tsql": {
+        "target": "DATE"
+      },
+      "mysql": {
+        "target": "DATE"
+      },
+      "oracle": {
+        "target": "DATE"
+      },
+      "postgresql": {
+        "target": "DATE"
+      },
+      "db2": {
+        "target": "DATE"
+      },
+      "hana": {
+        "target": "DATE"
+      },
+      "snowflake": {
+        "target": "DATE"
+      },
+      "oracle->snowflake": {
+        "target": "TIMESTAMP_NTZ",
+        "review": "Oracle DATE includes date and time components; mapped to Snowflake TIMESTAMP_NTZ to preserve time precision."
+      },
+      "hana->snowflake": {
+        "target": "DATE"
+      }
+    },
+    "TIME": {
+      "tsql": {
+        "target": "TIME"
+      },
+      "mysql": {
+        "target": "TIME"
+      },
+      "oracle": {
+        "target": "INTERVAL DAY TO SECOND",
+        "review": "Oracle uses INTERVAL for time representation."
+      },
+      "postgresql": {
+        "target": "TIME"
+      },
+      "db2": {
+        "target": "TIME"
+      },
+      "hana": {
+        "target": "TIME"
+      },
+      "snowflake": {
+        "target": "TIME"
+      }
+    },
+    "SECONDDATE": {
+      "tsql": {
+        "target": "DATETIME2"
+      },
+      "mysql": {
+        "target": "DATETIME"
+      },
+      "oracle": {
+        "target": "DATE"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "SECONDDATE"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_NTZ",
+        "review": "SAP HANA SECONDDATE (second-precision timestamp) mapped to Snowflake TIMESTAMP_NTZ."
+      }
+    },
+    "LONGDATE": {
+      "tsql": {
+        "target": "DATETIME2"
+      },
+      "mysql": {
+        "target": "DATETIME"
+      },
+      "oracle": {
+        "target": "TIMESTAMP"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "LONGDATE"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_NTZ",
+        "review": "SAP HANA LONGDATE (nanosecond-precision timestamp) mapped to Snowflake TIMESTAMP_NTZ."
+      }
+    },
     "TIMESTAMP": {
-      "tsql": {"target": "TIMESTAMP"},
-      "mysql": {"target": "TIMESTAMP_NTZ"},
-      "oracle": {"target": "TIMESTAMP", "review": "Oracle TIMESTAMP behavior differs from DATE; confirm precision."},
-      "postgresql": {"target": "TIMESTAMP"},
-      "db2": {"target": "TIMESTAMP"},
-      "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP_NTZ"}
+      "tsql": {
+        "target": "TIMESTAMP"
+      },
+      "mysql": {
+        "target": "TIMESTAMP_NTZ"
+      },
+      "oracle": {
+        "target": "TIMESTAMP"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "TIMESTAMP"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_NTZ"
+      }
     },
-
     "TIMESTAMP WITH TIME ZONE": {
-      "tsql": {"target": null, "review": "T-SQL does not use this form."},
-      "mysql": {"target": null},
-      "oracle": {"target": "TIMESTAMP WITH TIME ZONE"},
-      "postgresql": {"target": "TIMESTAMP WITH TIME ZONE"},
-      "db2": {"target": "TIMESTAMP WITH TIME ZONE"},
-      "hana": {"target": "TIMESTAMP WITH TIME ZONE"},
-      "snowflake": {"target": "TIMESTAMP_TZ", "review": "Preserve timezone information in Snowflake TIMESTAMP_TZ."}
+      "tsql": {
+        "target": "DATETIMEOFFSET"
+      },
+      "mysql": {
+        "target": "TIMESTAMP"
+      },
+      "oracle": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "db2": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "hana": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_TZ",
+        "review": "Preserve timezone information in Snowflake TIMESTAMP_TZ."
+      }
     },
-
     "TIMESTAMP WITHOUT TIME ZONE": {
-      "tsql": {"target": null},
-      "mysql": {"target": "TIMESTAMP_NTZ"},
-      "oracle": {"target": "TIMESTAMP"},
-      "postgresql": {"target": "TIMESTAMP"},
-      "db2": {"target": "TIMESTAMP"},
-      "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP_NTZ"}
+      "tsql": {
+        "target": "DATETIME2"
+      },
+      "mysql": {
+        "target": "TIMESTAMP_NTZ"
+      },
+      "oracle": {
+        "target": "TIMESTAMP"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP"
+      },
+      "db2": {
+        "target": "TIMESTAMP"
+      },
+      "hana": {
+        "target": "TIMESTAMP"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_NTZ"
+      }
     },
-
+    "TIMESTAMP WITH LOCAL TIME ZONE": {
+      "tsql": {
+        "target": "DATETIMEOFFSET"
+      },
+      "mysql": {
+        "target": "TIMESTAMP"
+      },
+      "oracle": {
+        "target": "TIMESTAMP WITH LOCAL TIME ZONE"
+      },
+      "postgresql": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "db2": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "hana": {
+        "target": "TIMESTAMP WITH TIME ZONE"
+      },
+      "snowflake": {
+        "target": "TIMESTAMP_TZ",
+        "review": "Oracle TIMESTAMP WITH LOCAL TIME ZONE stores normalized UTC and displays in session timezone; mapped to Snowflake TIMESTAMP_TZ. Review downstream session timezone assumptions."
+      }
+    },
+    "INTERVAL": {
+      "tsql": {
+        "target": null,
+        "review": "T-SQL has no native INTERVAL type; manual redesign required."
+      },
+      "mysql": {
+        "target": null,
+        "review": "MySQL has no INTERVAL column type; manual redesign required."
+      },
+      "oracle": {
+        "target": "INTERVAL DAY TO SECOND"
+      },
+      "postgresql": {
+        "target": "INTERVAL"
+      },
+      "db2": {
+        "target": null,
+        "review": "DB2 INTERVAL handling varies; manual review required."
+      },
+      "hana": {
+        "target": null,
+        "review": "HANA has no INTERVAL column type; manual review required."
+      },
+      "snowflake": {
+        "target": "INTERVAL",
+        "review": "Oracle INTERVAL data type mapped to Snowflake INTERVAL. Review usage as Snowflake column data type support for INTERVAL may be limited; consider storing as numeric seconds/days or VARCHAR."
+      }
+    },
+    "INTERVAL DAY TO SECOND": {
+      "tsql": {
+        "target": null,
+        "review": "T-SQL has no native INTERVAL DAY TO SECOND type; manual redesign required."
+      },
+      "mysql": {
+        "target": null,
+        "review": "MySQL has no INTERVAL column type."
+      },
+      "oracle": {
+        "target": "INTERVAL DAY TO SECOND"
+      },
+      "postgresql": {
+        "target": "INTERVAL"
+      },
+      "db2": {
+        "target": null,
+        "review": "DB2 INTERVAL handling varies; manual review required."
+      },
+      "hana": {
+        "target": null,
+        "review": "HANA has no INTERVAL column type."
+      },
+      "snowflake": {
+        "target": "INTERVAL",
+        "review": "Oracle INTERVAL DAY TO SECOND mapped to Snowflake INTERVAL. Review usage as Snowflake column data type support for INTERVAL may be limited; consider storing as numeric seconds or VARCHAR."
+      }
+    },
+    "INTERVAL YEAR TO MONTH": {
+      "tsql": {
+        "target": null,
+        "review": "T-SQL has no native INTERVAL YEAR TO MONTH type; manual redesign required."
+      },
+      "mysql": {
+        "target": null,
+        "review": "MySQL has no INTERVAL column type."
+      },
+      "oracle": {
+        "target": "INTERVAL YEAR TO MONTH"
+      },
+      "postgresql": {
+        "target": "INTERVAL"
+      },
+      "db2": {
+        "target": null,
+        "review": "DB2 INTERVAL handling varies; manual review required."
+      },
+      "hana": {
+        "target": null,
+        "review": "HANA has no INTERVAL column type."
+      },
+      "snowflake": {
+        "target": "INTERVAL",
+        "review": "Oracle INTERVAL YEAR TO MONTH mapped to Snowflake INTERVAL. Review usage as Snowflake column data type support for INTERVAL may be limited; consider storing as numeric months or VARCHAR."
+      }
+    },
+    "DECIMAL": {
+      "tsql": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "NUMBER",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "NUMERIC",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "carry_args": true
+      }
+    },
+    "NUMERIC": {
+      "tsql": {
+        "target": "NUMERIC",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "NUMBER",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "NUMERIC",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "carry_args": true
+      }
+    },
+    "NUMBER": {
+      "tsql": {
+        "target": "NUMERIC",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "oracle": {
+        "target": "NUMBER",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "NUMERIC",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "DECIMAL",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "carry_args": true
+      }
+    },
+    "SMALLDECIMAL": {
+      "tsql": {
+        "target": "DECIMAL",
+        "review": "SMALLDECIMAL is HANA-specific; mapped to DECIMAL."
+      },
+      "mysql": {
+        "target": "DECIMAL"
+      },
+      "oracle": {
+        "target": "NUMBER"
+      },
+      "postgresql": {
+        "target": "NUMERIC"
+      },
+      "db2": {
+        "target": "DECIMAL"
+      },
+      "hana": {
+        "target": "SMALLDECIMAL"
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "review": "SAP HANA SMALLDECIMAL is a floating-point decimal with variable scale; mapped to Snowflake NUMBER. Manual review recommended to confirm precision and scale requirements."
+      }
+    },
+    "FLOAT": {
+      "tsql": {
+        "target": "FLOAT"
+      },
+      "mysql": {
+        "target": "FLOAT"
+      },
+      "oracle": {
+        "target": "FLOAT"
+      },
+      "postgresql": {
+        "target": "DOUBLE PRECISION"
+      },
+      "db2": {
+        "target": "DOUBLE"
+      },
+      "hana": {
+        "target": "DOUBLE"
+      },
+      "snowflake": {
+        "target": "FLOAT"
+      }
+    },
+    "BINARY_FLOAT": {
+      "tsql": {
+        "target": "REAL"
+      },
+      "mysql": {
+        "target": "FLOAT"
+      },
+      "oracle": {
+        "target": "BINARY_FLOAT"
+      },
+      "postgresql": {
+        "target": "REAL"
+      },
+      "db2": {
+        "target": "REAL"
+      },
+      "hana": {
+        "target": "REAL"
+      },
+      "snowflake": {
+        "target": "FLOAT",
+        "review": "Oracle BINARY_FLOAT (32-bit IEEE float) mapped to Snowflake FLOAT."
+      }
+    },
+    "BINARY_DOUBLE": {
+      "tsql": {
+        "target": "FLOAT"
+      },
+      "mysql": {
+        "target": "DOUBLE"
+      },
+      "oracle": {
+        "target": "BINARY_DOUBLE"
+      },
+      "postgresql": {
+        "target": "DOUBLE PRECISION"
+      },
+      "db2": {
+        "target": "DOUBLE"
+      },
+      "hana": {
+        "target": "DOUBLE"
+      },
+      "snowflake": {
+        "target": "DOUBLE",
+        "review": "Oracle BINARY_DOUBLE (64-bit IEEE double) mapped to Snowflake DOUBLE."
+      }
+    },
+    "REAL": {
+      "tsql": {
+        "target": "REAL",
+        "review": "REAL is 32-bit; precision may differ across databases."
+      },
+      "mysql": {
+        "target": "FLOAT"
+      },
+      "oracle": {
+        "target": "FLOAT"
+      },
+      "postgresql": {
+        "target": "REAL"
+      },
+      "db2": {
+        "target": "REAL"
+      },
+      "hana": {
+        "target": "REAL"
+      },
+      "snowflake": {
+        "target": "FLOAT",
+        "review": "REAL (32-bit single precision) mapped to Snowflake FLOAT (64-bit double precision)."
+      }
+    },
+    "DOUBLE": {
+      "tsql": {
+        "target": "FLOAT"
+      },
+      "mysql": {
+        "target": "DOUBLE"
+      },
+      "oracle": {
+        "target": "DOUBLE"
+      },
+      "postgresql": {
+        "target": "DOUBLE PRECISION"
+      },
+      "db2": {
+        "target": "DOUBLE"
+      },
+      "hana": {
+        "target": "DOUBLE"
+      },
+      "snowflake": {
+        "target": "DOUBLE"
+      }
+    },
     "DOUBLE PRECISION": {
-      "tsql": {"target": "FLOAT"},
-      "mysql": {"target": "DOUBLE"},
-      "oracle": {"target": "DOUBLE"},
-      "postgresql": {"target": "DOUBLE PRECISION"},
-      "db2": {"target": "DOUBLE"},
-      "hana": {"target": "DOUBLE"},
-      "snowflake": {"target": "DOUBLE"}
+      "tsql": {
+        "target": "FLOAT"
+      },
+      "mysql": {
+        "target": "DOUBLE"
+      },
+      "oracle": {
+        "target": "DOUBLE"
+      },
+      "postgresql": {
+        "target": "DOUBLE PRECISION"
+      },
+      "db2": {
+        "target": "DOUBLE"
+      },
+      "hana": {
+        "target": "DOUBLE"
+      },
+      "snowflake": {
+        "target": "DOUBLE"
+      }
     },
-
     "SERIAL": {
-      "tsql": {"target": "INTEGER", "review": "T-SQL has no SERIAL; map to INTEGER and add identity handling separately."},
-      "mysql": {"target": "INTEGER", "review": "MySQL AUTO_INCREMENT is preferred; SERIAL maps to INTEGER with AUTO_INCREMENT behavior."},
-      "oracle": {"target": "NUMBER(10,0)", "review": "Oracle uses sequences; SERIAL mapped to NUMBER."},
-      "postgresql": {"target": "INTEGER", "review": "Postgres SERIAL should be converted to AUTOINCREMENT or sequence; map to INTEGER for target and add identity handling."},
-      "db2": {"target": "INTEGER"},
-      "hana": {"target": "INTEGER"},
-      "snowflake": {"target": "INTEGER", "review": "SERIAL is sequence-backed; convert to AUTOINCREMENT or recreate sequence+default in Snowflake."}
+      "tsql": {
+        "target": "INTEGER",
+        "review": "T-SQL has no SERIAL; map to INTEGER and add identity handling separately."
+      },
+      "mysql": {
+        "target": "INTEGER",
+        "review": "MySQL AUTO_INCREMENT is preferred; SERIAL maps to INTEGER with AUTO_INCREMENT behavior."
+      },
+      "oracle": {
+        "target": "NUMBER(10,0)",
+        "review": "Oracle uses sequences; SERIAL mapped to NUMBER."
+      },
+      "postgresql": {
+        "target": "INTEGER",
+        "review": "Postgres SERIAL should be converted to AUTOINCREMENT or sequence; map to INTEGER for target and add identity handling."
+      },
+      "db2": {
+        "target": "INTEGER"
+      },
+      "hana": {
+        "target": "INTEGER"
+      },
+      "snowflake": {
+        "target": "INTEGER",
+        "review": "SERIAL is sequence-backed; convert to AUTOINCREMENT or recreate sequence+default in Snowflake."
+      }
     },
-
     "SMALLSERIAL": {
-      "tsql": {"target": "SMALLINT"},
-      "mysql": {"target": "SMALLINT"},
-      "oracle": {"target": "NUMBER(5,0)"},
-      "postgresql": {"target": "SMALLINT", "review": "SMALLSERIAL should be converted to SMALLINT + autoincrement semantics."},
-      "db2": {"target": "SMALLINT"},
-      "hana": {"target": "SMALLINT"},
-      "snowflake": {"target": "SMALLINT", "review": "Convert to AUTOINCREMENT on Snowflake if needed."}
+      "tsql": {
+        "target": "SMALLINT"
+      },
+      "mysql": {
+        "target": "SMALLINT"
+      },
+      "oracle": {
+        "target": "NUMBER(5,0)"
+      },
+      "postgresql": {
+        "target": "SMALLINT",
+        "review": "SMALLSERIAL should be converted to SMALLINT + autoincrement semantics."
+      },
+      "db2": {
+        "target": "SMALLINT"
+      },
+      "hana": {
+        "target": "SMALLINT"
+      },
+      "snowflake": {
+        "target": "SMALLINT",
+        "review": "Convert to AUTOINCREMENT on Snowflake if needed."
+      }
     },
-
     "BIGSERIAL": {
-      "tsql": {"target": "BIGINT"},
-      "mysql": {"target": "BIGINT"},
-      "oracle": {"target": "NUMBER(19,0)"},
-      "postgresql": {"target": "BIGINT", "review": "BIGSERIAL should be converted to BIGINT + autoincrement semantics."},
-      "db2": {"target": "BIGINT"},
-      "hana": {"target": "BIGINT"},
-      "snowflake": {"target": "BIGINT", "review": "Convert to AUTOINCREMENT on Snowflake if needed."}
+      "tsql": {
+        "target": "BIGINT"
+      },
+      "mysql": {
+        "target": "BIGINT"
+      },
+      "oracle": {
+        "target": "NUMBER(19,0)"
+      },
+      "postgresql": {
+        "target": "BIGINT",
+        "review": "BIGSERIAL should be converted to BIGINT + autoincrement semantics."
+      },
+      "db2": {
+        "target": "BIGINT"
+      },
+      "hana": {
+        "target": "BIGINT"
+      },
+      "snowflake": {
+        "target": "BIGINT",
+        "review": "Convert to AUTOINCREMENT on Snowflake if needed."
+      }
     },
     "UUID": {
-      "tsql": {"target": "VARCHAR", "fixed_args": "36"},
-      "mysql": {"target": "CHAR", "fixed_args": "36"},
-      "oracle": {"target": "RAW", "fixed_args": "16"},
-      "postgresql": {"target": "UUID"},
-      "db2": {"target": "CHAR", "fixed_args": "36"},
-      "hana": {"target": "NVARCHAR", "fixed_args": "36"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "36"}
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "36"
+      },
+      "mysql": {
+        "target": "CHAR",
+        "fixed_args": "36"
+      },
+      "oracle": {
+        "target": "RAW",
+        "fixed_args": "16"
+      },
+      "postgresql": {
+        "target": "UUID"
+      },
+      "db2": {
+        "target": "CHAR",
+        "fixed_args": "36"
+      },
+      "hana": {
+        "target": "NVARCHAR",
+        "fixed_args": "36"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "36"
+      }
     },
-
-    "JSONB": {
-      "tsql": {"target": "VARIANT"},
-      "mysql": {"target": "VARIANT"},
-      "oracle": {"target": "JSON"},
-      "postgresql": {"target": "JSONB"},
-      "db2": {"target": "CLOB"},
-      "hana": {"target": "VARIANT"},
-      "snowflake": {"target": "VARIANT"}
-    },
-
-    "BYTEA": {
-      "tsql": {"target": "VARBINARY", "carry_args": true},
-      "mysql": {"target": "BINARY", "carry_args": true},
-      "oracle": {"target": "BLOB"},
-      "postgresql": {"target": "BYTEA"},
-      "db2": {"target": "BLOB"},
-      "hana": {"target": "BINARY"},
-      "snowflake": {"target": "BINARY", "carry_args": true}
-    },
-
     "ARRAY": {
-      "tsql": {"target": null, "review": "SQL Server has no native ARRAY type."},
-      "mysql": {"target": null, "review": "MySQL does not use ARRAY as a column type."},
-      "oracle": {"target": null, "review": "Oracle nested tables / varrays require manual mapping."},
-      "postgresql": {"target": "ARRAY", "review": "Array semantics differ; review element type mapping."},
-      "db2": {"target": null, "review": "DB2 array support differs; manual review."},
-      "hana": {"target": null, "review": "HANA array-like types require manual handling."},
-      "snowflake": {"target": "ARRAY", "review": "Snowflake supports ARRAY; verify element types."}
+      "tsql": {
+        "target": null,
+        "review": "SQL Server has no native ARRAY type."
+      },
+      "mysql": {
+        "target": null,
+        "review": "MySQL does not use ARRAY as a column type."
+      },
+      "oracle": {
+        "target": null,
+        "review": "Oracle nested tables / varrays require manual mapping."
+      },
+      "postgresql": {
+        "target": "ARRAY",
+        "review": "Array semantics differ; review element type mapping."
+      },
+      "db2": {
+        "target": null,
+        "review": "DB2 array support differs; manual review."
+      },
+      "hana": {
+        "target": null,
+        "review": "HANA array-like types require manual handling."
+      },
+      "snowflake": {
+        "target": "ARRAY",
+        "review": "Snowflake supports ARRAY; verify element types."
+      }
     },
-
-    "FLOAT": {
-      "tsql": {"target": "FLOAT"},
-      "mysql": {"target": "FLOAT"},
-      "oracle": {"target": "FLOAT"},
-      "postgresql": {"target": "DOUBLE PRECISION"},
-      "db2": {"target": "DOUBLE"},
-      "hana": {"target": "DOUBLE"},
-      "snowflake": {"target": "FLOAT"}
-    },
-
-    "REAL": {
-      "tsql": {"target": "REAL", "review": "REAL is 32-bit; precision may differ across databases."},
-      "mysql": {"target": "FLOAT"},
-      "oracle": {"target": "FLOAT"},
-      "postgresql": {"target": "REAL"},
-      "db2": {"target": "REAL"},
-      "hana": {"target": "REAL"},
-      "snowflake": {"target": "FLOAT", "review": "Snowflake FLOAT is 64-bit double; different precision than SQL Server REAL."}
-    },
-
     "MONEY": {
-      "tsql": {"target": "MONEY", "review": "MONEY is SQL Server-specific; convert to DECIMAL/NUMBER with fixed precision."},
-      "mysql": {"target": "DECIMAL", "fixed_args": "19,4"},
-      "oracle": {"target": "NUMBER", "fixed_args": "19,4"},
-      "postgresql": {"target": "NUMERIC", "fixed_args": "19,4"},
-      "db2": {"target": "DECIMAL", "fixed_args": "19,4"},
-      "hana": {"target": "DECIMAL", "fixed_args": "19,4"},
-      "snowflake": {"target": "NUMBER", "fixed_args": "19,4"}
+      "tsql": {
+        "target": "MONEY",
+        "review": "MONEY is SQL Server-specific; convert to DECIMAL/NUMBER with fixed precision."
+      },
+      "mysql": {
+        "target": "DECIMAL",
+        "fixed_args": "19,4"
+      },
+      "oracle": {
+        "target": "NUMBER",
+        "fixed_args": "19,4"
+      },
+      "postgresql": {
+        "target": "NUMERIC",
+        "fixed_args": "19,4"
+      },
+      "db2": {
+        "target": "DECIMAL",
+        "fixed_args": "19,4"
+      },
+      "hana": {
+        "target": "DECIMAL",
+        "fixed_args": "19,4"
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "fixed_args": "19,4"
+      }
     },
-
-    "DECFLOAT": {
-      "tsql": {"target": null, "review": "DECFLOAT specific to DB2; manual review needed."},
-      "mysql": {"target": null},
-      "oracle": {"target": null},
-      "postgresql": {"target": null},
-      "db2": {"target": "NUMBER", "review": "DB2 DECFLOAT requires review; map to NUMBER or FLOAT depending on precision requirements."},
-      "hana": {"target": null},
-      "snowflake": {"target": "NUMBER", "review": "Map DECFLOAT to NUMBER by default; verify precision/behavior."}
-    },
-
-    "DBCLOB": {
-      "tsql": {"target": "VARCHAR", "fixed_args": "16777216"},
-      "mysql": {"target": "VARCHAR"},
-      "oracle": {"target": "CLOB"},
-      "postgresql": {"target": "TEXT"},
-      "db2": {"target": "DBCLOB"},
-      "hana": {"target": "NCLOB"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216", "review": "DB CLOBs mapped to large VARCHAR in Snowflake; confirm size."}
-    },
-
-    "LONG VARCHAR": {
-      "tsql": {"target": "VARCHAR", "fixed_args": "MAX"},
-      "mysql": {"target": "VARCHAR"},
-      "oracle": {"target": "CLOB"},
-      "postgresql": {"target": "TEXT"},
-      "db2": {"target": "LONG VARCHAR"},
-      "hana": {"target": "NCLOB"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216", "review": "Map long text to large VARCHAR."}
-    },
-
-    "ROWID": {
-      "tsql": {"target": "VARCHAR", "review": "ROWID-like columns should be reviewed."},
-      "mysql": {"target": "VARCHAR"},
-      "oracle": {"target": "ROWID"},
-      "postgresql": {"target": "VARCHAR"},
-      "db2": {"target": "VARCHAR", "review": "DB2 ROWID mapping to VARCHAR; review usage."},
-      "hana": {"target": "VARCHAR"},
-      "snowflake": {"target": "VARCHAR", "review": "ROWID mapped to VARCHAR; verify uniqueness/format."}
-    },
-
     "SMALLMONEY": {
-      "tsql": {"target": "SMALLMONEY"},
-      "mysql": {"target": "DECIMAL", "fixed_args": "10,4"},
-      "oracle": {"target": "NUMBER", "fixed_args": "10,4"},
-      "postgresql": {"target": "NUMERIC", "fixed_args": "10,4"},
-      "db2": {"target": "DECIMAL", "fixed_args": "10,4"},
-      "hana": {"target": "DECIMAL", "fixed_args": "10,4"},
-      "snowflake": {"target": "NUMBER", "fixed_args": "10,4"}
+      "tsql": {
+        "target": "SMALLMONEY"
+      },
+      "mysql": {
+        "target": "DECIMAL",
+        "fixed_args": "10,4"
+      },
+      "oracle": {
+        "target": "NUMBER",
+        "fixed_args": "10,4"
+      },
+      "postgresql": {
+        "target": "NUMERIC",
+        "fixed_args": "10,4"
+      },
+      "db2": {
+        "target": "DECIMAL",
+        "fixed_args": "10,4"
+      },
+      "hana": {
+        "target": "DECIMAL",
+        "fixed_args": "10,4"
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "fixed_args": "10,4"
+      }
     },
-
+    "DECFLOAT": {
+      "tsql": {
+        "target": null,
+        "review": "DECFLOAT specific to DB2; manual review needed."
+      },
+      "mysql": {
+        "target": null
+      },
+      "oracle": {
+        "target": null
+      },
+      "postgresql": {
+        "target": null
+      },
+      "db2": {
+        "target": "NUMBER",
+        "review": "DB2 DECFLOAT requires review; map to NUMBER or FLOAT depending on precision requirements."
+      },
+      "hana": {
+        "target": null
+      },
+      "snowflake": {
+        "target": "NUMBER",
+        "review": "Map DECFLOAT to NUMBER by default; verify precision/behavior."
+      }
+    },
+    "ROWID": {
+      "tsql": {
+        "target": "VARCHAR",
+        "review": "ROWID-like columns should be reviewed."
+      },
+      "mysql": {
+        "target": "VARCHAR"
+      },
+      "oracle": {
+        "target": "ROWID"
+      },
+      "postgresql": {
+        "target": "VARCHAR"
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "review": "DB2 ROWID mapping to VARCHAR; review usage."
+      },
+      "hana": {
+        "target": "VARCHAR"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "review": "ROWID mapped to VARCHAR; verify uniqueness and format across platforms."
+      }
+    },
+    "UROWID": {
+      "tsql": {
+        "target": "VARCHAR",
+        "review": "UROWID mapped to VARCHAR."
+      },
+      "mysql": {
+        "target": "VARCHAR"
+      },
+      "oracle": {
+        "target": "UROWID"
+      },
+      "postgresql": {
+        "target": "VARCHAR"
+      },
+      "db2": {
+        "target": "VARCHAR"
+      },
+      "hana": {
+        "target": "VARCHAR"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true,
+        "review": "Oracle UROWID (universal rowid for index-organized tables) mapped to Snowflake VARCHAR. Manual review required."
+      }
+    },
     "UNIQUEIDENTIFIER": {
-      "tsql": {"target": "UNIQUEIDENTIFIER", "review": "Implement GUID generation manually."},
-      "mysql": {"target": "CHAR", "fixed_args": "36", "review": "MySQL stores GUIDs as VARCHAR(36)."},
-      "oracle": {"target": "RAW", "fixed_args": "16", "review": "Oracle RAW(16) stores binary UUIDs."},
-      "postgresql": {"target": "UUID", "review": "PostgreSQL has native UUID type; consider using uuid-ossp extension."},
-      "db2": {"target": "CHAR", "fixed_args": "36"},
-      "hana": {"target": "NVARCHAR", "fixed_args": "36"},
-      "snowflake": {"target": "VARCHAR", "fixed_args": "36"}
+      "tsql": {
+        "target": "UNIQUEIDENTIFIER",
+        "review": "Implement GUID generation manually."
+      },
+      "mysql": {
+        "target": "CHAR",
+        "fixed_args": "36",
+        "review": "MySQL stores GUIDs as VARCHAR(36)."
+      },
+      "oracle": {
+        "target": "RAW",
+        "fixed_args": "16",
+        "review": "Oracle RAW(16) stores binary UUIDs."
+      },
+      "postgresql": {
+        "target": "UUID",
+        "review": "PostgreSQL has native UUID type; consider using uuid-ossp extension."
+      },
+      "db2": {
+        "target": "CHAR",
+        "fixed_args": "36"
+      },
+      "hana": {
+        "target": "NVARCHAR",
+        "fixed_args": "36"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "fixed_args": "36"
+      }
     },
-
-    "VARBINARY": {
-      "tsql": {"target": "VARBINARY", "carry_args": true},
-      "mysql": {"target": "VARBINARY", "carry_args": true},
-      "oracle": {"target": "RAW", "carry_args": true},
-      "postgresql": {"target": "BYTEA"},
-      "db2": {"target": "VARCHAR FOR BIT DATA", "carry_args": true},
-      "hana": {"target": "VARBINARY", "carry_args": true},
-      "snowflake": {"target": "BINARY", "carry_args": true}
-    },
-
-    "BINARY": {
-      "tsql": {"target": "BINARY", "carry_args": true},
-      "mysql": {"target": "BINARY", "carry_args": true},
-      "oracle": {"target": "RAW", "carry_args": true},
-      "postgresql": {"target": "BYTEA"},
-      "db2": {"target": "CHAR FOR BIT DATA", "carry_args": true},
-      "hana": {"target": "BINARY", "carry_args": true},
-      "snowflake": {"target": "BINARY", "carry_args": true}
-    },
-
-    "IMAGE": {
-      "tsql": {"target": "VARBINARY", "fixed_args": "MAX", "review": "IMAGE is deprecated in SQL Server."},
-      "mysql": {"target": "LONGBLOB"},
-      "oracle": {"target": "BLOB", "review": "Oracle BLOB has different semantics."},
-      "postgresql": {"target": "BYTEA"},
-      "db2": {"target": "BLOB"},
-      "hana": {"target": "BLOB"},
-      "snowflake": {"target": "BINARY", "fixed_args": "8388608"}
-    },
-
     "XML": {
-      "tsql": {"target": "XML", "review": "XML must be handled differently in target database."},
-      "mysql": {"target": "LONGTEXT", "review": "MySQL stores XML as text; no native XML type."},
-      "oracle": {"target": "XMLTYPE", "review": "Oracle XMLType has different semantics."},
-      "postgresql": {"target": "VARCHAR", "review": "PostgreSQL XML -> VARCHAR mapping; manual review required."},
-      "db2": {"target": "XML", "review": "DB2 has native XML support."},
-      "hana": {"target": "NCLOB", "review": "HANA stores XML as NCLOB."},
-      "snowflake": {"target": "VARIANT", "review": "Snowflake uses VARIANT for semi-structured data; XML may be stored as text or VARIANT after conversion."}
+      "tsql": {
+        "target": "XML",
+        "review": "XML must be handled differently in target database."
+      },
+      "mysql": {
+        "target": "LONGTEXT",
+        "review": "MySQL stores XML as text; no native XML type."
+      },
+      "oracle": {
+        "target": "XMLTYPE",
+        "review": "Oracle XMLType has different semantics."
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "review": "PostgreSQL XML -> VARCHAR mapping; manual review required."
+      },
+      "db2": {
+        "target": "XML",
+        "review": "DB2 has native XML support."
+      },
+      "hana": {
+        "target": "NCLOB",
+        "review": "HANA stores XML as NCLOB."
+      },
+      "snowflake": {
+        "target": "VARIANT",
+        "review": "Snowflake uses VARIANT for semi-structured data; XML may be stored as text or VARIANT after conversion."
+      }
     },
-
+    "XMLTYPE": {
+      "tsql": {
+        "target": "XML",
+        "review": "XML must be handled differently in target database."
+      },
+      "mysql": {
+        "target": "LONGTEXT",
+        "review": "MySQL stores XML as text; no native XML type."
+      },
+      "oracle": {
+        "target": "XMLTYPE"
+      },
+      "postgresql": {
+        "target": "XML",
+        "review": "PostgreSQL XML -> VARCHAR mapping; manual review required."
+      },
+      "db2": {
+        "target": "XML",
+        "review": "DB2 has native XML support."
+      },
+      "hana": {
+        "target": "NCLOB",
+        "review": "HANA stores XML as NCLOB."
+      },
+      "snowflake": {
+        "target": "VARIANT",
+        "review": "Oracle XMLTYPE mapped to Snowflake VARIANT (or VARCHAR). XML data can be parsed into VARIANT or stored as VARCHAR text. Manual review required."
+      }
+    },
     "SQL_VARIANT": {
-      "tsql": {"target": "SQL_VARIANT", "review": "SQL_VARIANT is SQL Server-specific; convert to VARIANT or appropriate type."},
-      "mysql": {"target": "JSON", "review": "MySQL JSON type for variant data."},
-      "oracle": {"target": "XMLTYPE or CLOB", "review": "Oracle lacks direct equivalent; use XMLTYPE or CLOB."},
-      "postgresql": {"target": "JSON"},
-      "db2": {"target": "CLOB"},
-      "hana": {"target": "NCLOB"},
-      "snowflake": {"target": "VARIANT"}
+      "tsql": {
+        "target": "SQL_VARIANT",
+        "review": "SQL_VARIANT is SQL Server-specific; convert to VARIANT or appropriate type."
+      },
+      "mysql": {
+        "target": "JSON",
+        "review": "MySQL JSON type for variant data."
+      },
+      "oracle": {
+        "target": "XMLTYPE or CLOB",
+        "review": "Oracle lacks direct equivalent; use XMLTYPE or CLOB."
+      },
+      "postgresql": {
+        "target": "JSON"
+      },
+      "db2": {
+        "target": "CLOB"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARIANT"
+      }
     },
-
     "GEOGRAPHY": {
-      "tsql": {"target": "GEOGRAPHY", "review": "GEOGRAPHY semantics differ across databases."},
-      "mysql": {"target": "GEOMETRY", "review": "MySQL GEOMETRY type (OpenGIS format)."},
-      "oracle": {"target": "SDO_GEOMETRY", "review": "Oracle uses SDO_GEOMETRY for spatial data."},
-      "postgresql": {"target": "GEOGRAPHY", "review": "PostGIS extension provides GEOGRAPHY."},
-      "db2": {"target": "ST_GEOMETRY", "review": "DB2 Spatial Extender uses ST_GEOMETRY."},
-      "hana": {"target": "ST_GEOMETRY", "review": "HANA Spatial type."},
-      "snowflake": {"target": "GEOGRAPHY", "review": "Snowflake GEOGRAPHY uses WGS84/GeoJSON."}
+      "tsql": {
+        "target": "GEOGRAPHY",
+        "review": "GEOGRAPHY semantics differ across databases."
+      },
+      "mysql": {
+        "target": "GEOMETRY",
+        "review": "MySQL GEOMETRY type (OpenGIS format)."
+      },
+      "oracle": {
+        "target": "SDO_GEOMETRY",
+        "review": "Oracle uses SDO_GEOMETRY for spatial data."
+      },
+      "postgresql": {
+        "target": "GEOGRAPHY",
+        "review": "PostGIS extension provides GEOGRAPHY."
+      },
+      "db2": {
+        "target": "ST_GEOMETRY",
+        "review": "DB2 Spatial Extender uses ST_GEOMETRY."
+      },
+      "hana": {
+        "target": "ST_GEOMETRY",
+        "review": "HANA Spatial type."
+      },
+      "snowflake": {
+        "target": "GEOGRAPHY",
+        "review": "Snowflake GEOGRAPHY uses WGS84/GeoJSON."
+      }
     },
-
+    "GEOMETRY": {
+      "tsql": {
+        "target": "GEOMETRY",
+        "review": "Planar spatial type."
+      },
+      "mysql": {
+        "target": "GEOMETRY",
+        "review": "MySQL GEOMETRY type."
+      },
+      "oracle": {
+        "target": "SDO_GEOMETRY",
+        "review": "Oracle uses SDO_GEOMETRY for spatial data."
+      },
+      "postgresql": {
+        "target": "GEOMETRY",
+        "review": "PostGIS GEOMETRY type."
+      },
+      "db2": {
+        "target": "ST_GEOMETRY",
+        "review": "DB2 Spatial Extender uses ST_GEOMETRY."
+      },
+      "hana": {
+        "target": "ST_GEOMETRY",
+        "review": "HANA Spatial type."
+      },
+      "snowflake": {
+        "target": "GEOMETRY",
+        "review": "Snowflake GEOMETRY uses planar spatial coordinates."
+      }
+    },
+    "ST_POINT": {
+      "tsql": {
+        "target": "GEOGRAPHY",
+        "review": "Spatial point type."
+      },
+      "mysql": {
+        "target": "POINT"
+      },
+      "oracle": {
+        "target": "SDO_GEOMETRY"
+      },
+      "postgresql": {
+        "target": "GEOGRAPHY",
+        "review": "PostGIS GEOGRAPHY(POINT)."
+      },
+      "db2": {
+        "target": "ST_POINT"
+      },
+      "hana": {
+        "target": "ST_POINT"
+      },
+      "snowflake": {
+        "target": "GEOGRAPHY",
+        "review": "SAP HANA ST_POINT mapped to Snowflake GEOGRAPHY (or GEOMETRY). Manual review required to verify coordinate system (WGS84 vs planar) and spatial operations."
+      }
+    },
+    "ST_GEOMETRY": {
+      "tsql": {
+        "target": "GEOMETRY",
+        "review": "Spatial geometry type."
+      },
+      "mysql": {
+        "target": "GEOMETRY"
+      },
+      "oracle": {
+        "target": "SDO_GEOMETRY"
+      },
+      "postgresql": {
+        "target": "GEOMETRY"
+      },
+      "db2": {
+        "target": "ST_GEOMETRY"
+      },
+      "hana": {
+        "target": "ST_GEOMETRY"
+      },
+      "snowflake": {
+        "target": "GEOMETRY",
+        "review": "SAP HANA ST_GEOMETRY mapped to Snowflake GEOMETRY (or GEOGRAPHY). Manual review required to verify coordinate system / SRID and spatial functions."
+      }
+    },
     "HIERARCHYID": {
-      "tsql": {"target": null, "review": "HIERARCHYID has no equivalent; re-model as materialized path or adjacency list."},
-      "mysql": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."},
-      "oracle": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."},
-      "postgresql": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."},
-      "db2": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."},
-      "hana": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."},
-      "snowflake": {"target": null, "review": "HIERARCHYID has no equivalent; re-model."}
+      "tsql": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model as materialized path or adjacency list."
+      },
+      "mysql": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      },
+      "oracle": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      },
+      "postgresql": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      },
+      "db2": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      },
+      "hana": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      },
+      "snowflake": {
+        "target": null,
+        "review": "HIERARCHYID has no equivalent; re-model."
+      }
     },
-
     "ROWVERSION": {
-      "tsql": {"target": null, "review": "ROWVERSION (row-version stamp) has no cross-database equivalent; use manual timestamps or CDC."},
-      "mysql": {"target": null, "review": "ROWVERSION has no equivalent; use TIMESTAMP or triggers."},
-      "oracle": {"target": null, "review": "ROWVERSION has no equivalent; use triggers or SCN tracking."},
-      "postgresql": {"target": null, "review": "ROWVERSION has no equivalent; use xmin or triggers."},
-      "db2": {"target": null, "review": "ROWVERSION has no equivalent; use ROWID or manual tracking."},
-      "hana": {"target": null, "review": "ROWVERSION has no equivalent; use manual tracking."},
-      "snowflake": {"target": null, "review": "ROWVERSION has no equivalent; use STREAMS or manual tracking."}
+      "tsql": {
+        "target": null,
+        "review": "ROWVERSION (row-version stamp) has no cross-database equivalent; use manual timestamps or CDC."
+      },
+      "mysql": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use TIMESTAMP or triggers."
+      },
+      "oracle": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use triggers or SCN tracking."
+      },
+      "postgresql": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use xmin or triggers."
+      },
+      "db2": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use ROWID or manual tracking."
+      },
+      "hana": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use manual tracking."
+      },
+      "snowflake": {
+        "target": null,
+        "review": "ROWVERSION has no equivalent; use STREAMS or manual tracking."
+      }
     }
   },
-
   "function_mappings": {
     "_comment": "Dialect-specific function mappings for DEFAULT expressions and other contexts.",
-
     "GETDATE": {
-      "tsql": {"replacement": "GETDATE()"},
-      "mysql": {"replacement": "NOW()"},
-      "oracle": {"replacement": "SYSDATE"},
-      "postgresql": {"replacement": "CURRENT_TIMESTAMP"},
-      "db2": {"replacement": "CURRENT_TIMESTAMP"},
-      "hana": {"replacement": "CURRENT_TIMESTAMP"},
-      "snowflake": {"replacement": "CURRENT_TIMESTAMP()"}
+      "tsql": {
+        "replacement": "GETDATE()"
+      },
+      "mysql": {
+        "replacement": "NOW()"
+      },
+      "oracle": {
+        "replacement": "SYSDATE"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_TIMESTAMP()"
+      }
     },
-
+    "SYSDATE": {
+      "tsql": {
+        "replacement": "GETDATE()"
+      },
+      "mysql": {
+        "replacement": "NOW()"
+      },
+      "oracle": {
+        "replacement": "SYSDATE"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_TIMESTAMP()"
+      }
+    },
+    "SYSTIMESTAMP": {
+      "tsql": {
+        "replacement": "SYSDATETIME()"
+      },
+      "mysql": {
+        "replacement": "NOW()"
+      },
+      "oracle": {
+        "replacement": "SYSTIMESTAMP"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_TIMESTAMP()"
+      }
+    },
     "GETUTCDATE": {
-      "tsql": {"replacement": "GETUTCDATE()", "review": "Ensure timezone handling is consistent."},
-      "mysql": {"replacement": "UTC_TIMESTAMP()"},
-      "oracle": {"replacement": "SYS_EXTRACT_UTC(SYSTIMESTAMP)", "review": "Oracle UTC extraction."},
-      "postgresql": {"replacement": "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"},
-      "db2": {"replacement": "CURRENT_TIMESTAMP"},
-      "hana": {"replacement": "CURRENT_TIMESTAMP"},
-      "snowflake": {"replacement": "CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())", "review": "Verify session timezone."}
+      "tsql": {
+        "replacement": "GETUTCDATE()",
+        "review": "Ensure timezone handling is consistent."
+      },
+      "mysql": {
+        "replacement": "UTC_TIMESTAMP()"
+      },
+      "oracle": {
+        "replacement": "SYS_EXTRACT_UTC(SYSTIMESTAMP)",
+        "review": "Oracle UTC extraction."
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP AT TIME ZONE 'UTC'"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())",
+        "review": "Verify session timezone."
+      }
     },
-
     "NEWID": {
-      "tsql": {"replacement": "NEWID()", "review": "GUID generation algorithm differs."},
-      "mysql": {"replacement": "UUID()"},
-      "oracle": {"replacement": "DBMS_RANDOM.VALUE() -- or use sequence", "review": "Oracle lacks native GUID; use UUID package or sequence."},
-      "postgresql": {"replacement": "gen_random_uuid()", "review": "Requires pgcrypto extension."},
-      "db2": {"replacement": "GENERATE_UNIQUE()"},
-      "hana": {"replacement": "SYSUUID"},
-      "snowflake": {"replacement": "UUID_STRING()"}
+      "tsql": {
+        "replacement": "NEWID()",
+        "review": "GUID generation algorithm differs."
+      },
+      "mysql": {
+        "replacement": "UUID()"
+      },
+      "oracle": {
+        "replacement": "DBMS_RANDOM.VALUE() -- or use sequence",
+        "review": "Oracle lacks native GUID; use UUID package or sequence."
+      },
+      "postgresql": {
+        "replacement": "gen_random_uuid()",
+        "review": "Requires pgcrypto extension."
+      },
+      "db2": {
+        "replacement": "GENERATE_UNIQUE()"
+      },
+      "hana": {
+        "replacement": "SYSUUID"
+      },
+      "snowflake": {
+        "replacement": "UUID_STRING()"
+      }
     },
-
+    "SYS_GUID": {
+      "tsql": {
+        "replacement": "NEWID()"
+      },
+      "mysql": {
+        "replacement": "UUID()"
+      },
+      "oracle": {
+        "replacement": "SYS_GUID()"
+      },
+      "postgresql": {
+        "replacement": "gen_random_uuid()"
+      },
+      "db2": {
+        "replacement": "GENERATE_UNIQUE()"
+      },
+      "hana": {
+        "replacement": "SYSUUID"
+      },
+      "snowflake": {
+        "replacement": "UUID_STRING()"
+      }
+    },
     "ISNULL": {
-      "tsql": {"replacement": "ISNULL("},"mysql": {"replacement": "IFNULL("},
-      "oracle": {"replacement": "NVL("},
-      "postgresql": {"replacement": "COALESCE("},
-      "db2": {"replacement": "COALESCE("},
-      "hana": {"replacement": "COALESCE("},
-      "snowflake": {"replacement": "COALESCE("}
+      "tsql": {
+        "replacement": "ISNULL("
+      },
+      "mysql": {
+        "replacement": "IFNULL("
+      },
+      "oracle": {
+        "replacement": "NVL("
+      },
+      "postgresql": {
+        "replacement": "COALESCE("
+      },
+      "db2": {
+        "replacement": "COALESCE("
+      },
+      "hana": {
+        "replacement": "COALESCE("
+      },
+      "snowflake": {
+        "replacement": "COALESCE("
+      }
     },
-
+    "NVL": {
+      "tsql": {
+        "replacement": "ISNULL("
+      },
+      "mysql": {
+        "replacement": "IFNULL("
+      },
+      "oracle": {
+        "replacement": "NVL("
+      },
+      "postgresql": {
+        "replacement": "COALESCE("
+      },
+      "db2": {
+        "replacement": "COALESCE("
+      },
+      "hana": {
+        "replacement": "COALESCE("
+      },
+      "snowflake": {
+        "replacement": "COALESCE("
+      }
+    },
     "CURRENT_USER": {
-      "tsql": {"replacement": "CURRENT_USER"},
-      "mysql": {"replacement": "CURRENT_USER()"},
-      "oracle": {"replacement": "USER"},
-      "postgresql": {"replacement": "CURRENT_USER"},
-      "db2": {"replacement": "CURRENT_USER"},
-      "hana": {"replacement": "CURRENT_USER"},
-      "snowflake": {"replacement": "CURRENT_USER()"}
+      "tsql": {
+        "replacement": "CURRENT_USER"
+      },
+      "mysql": {
+        "replacement": "CURRENT_USER()"
+      },
+      "oracle": {
+        "replacement": "USER"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_USER"
+      },
+      "db2": {
+        "replacement": "CURRENT_USER"
+      },
+      "hana": {
+        "replacement": "CURRENT_USER"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_USER()"
+      }
     }
   },
-
   "identity_syntax": {
     "tsql": {
       "pattern": "IDENTITY\\s*\\(\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*\\)",
@@ -605,7 +2204,6 @@
       "template": "AUTOINCREMENT START {seed} INCREMENT {increment}"
     }
   },
-
   "bit_literal_defaults": {
     "tsql": {
       "0": "0",
@@ -638,260 +2236,1925 @@
       "1": "TRUE"
     }
   },
-
   "schema_handling": {
-    "tsql": {"strip_schemas": ["dbo", "sys"]},
-    "mysql": {"strip_schemas": ["mysql", "information_schema", "performance_schema"]},
-    "oracle": {"strip_schemas": ["SYS", "SYSTEM"]},
-    "postgresql": {"strip_schemas": ["pg_catalog", "information_schema", "public"]},
-    "db2": {"strip_schemas": ["SYSCAT", "SYSFUN", "SYSIBM"]},
-    "hana": {"strip_schemas": ["SYS", "CATALOG"]},
-    "snowflake": {"strip_schemas": []}
+    "tsql": {
+      "strip_schemas": [
+        "dbo",
+        "sys"
+      ]
+    },
+    "mysql": {
+      "strip_schemas": [
+        "mysql",
+        "information_schema",
+        "performance_schema"
+      ]
+    },
+    "oracle": {
+      "strip_schemas": [
+        "SYS",
+        "SYSTEM"
+      ]
+    },
+    "postgresql": {
+      "strip_schemas": [
+        "pg_catalog",
+        "information_schema",
+        "public"
+      ]
+    },
+    "db2": {
+      "strip_schemas": [
+        "SYSCAT",
+        "SYSFUN",
+        "SYSIBM"
+      ]
+    },
+    "hana": {
+      "strip_schemas": [
+        "SYS",
+        "CATALOG"
+      ]
+    },
+    "snowflake": {
+      "strip_schemas": []
+    }
   },
-
   "reserved_words": {
     "snowflake": [
-      "ACCOUNT","ALL","ALTER","AND","ANY","AS","BETWEEN","BY","CASE","CAST","CHECK",
-      "COLUMN","CONNECT","CONSTRAINT","CREATE","CROSS","CURRENT","CURRENT_DATE",
-      "CURRENT_TIME","CURRENT_TIMESTAMP","CURRENT_USER","DATABASE","DELETE","DISTINCT",
-      "DROP","ELSE","EXISTS","FALSE","FOR","FROM","FULL","GRANT","GROUP",
-      "HAVING","IN","INCREMENT","INNER","INSERT","INTO","IS","JOIN",
-      "LEFT","LIKE","NOT","NULL","OF","ON","OR","ORDER","OUTER",
-      "PRIMARY","REFERENCES","RIGHT","SELECT","SET","SOME","TABLE","THEN",
-      "TO","UNION","UNIQUE","UPDATE","USER","USING","VALUES","VIEW","WHERE","WITH"
+      "ACCOUNT",
+      "ALL",
+      "ALTER",
+      "AND",
+      "ANY",
+      "AS",
+      "BETWEEN",
+      "BY",
+      "CASE",
+      "CAST",
+      "CHECK",
+      "COLUMN",
+      "CONNECT",
+      "CONSTRAINT",
+      "CREATE",
+      "CROSS",
+      "CURRENT",
+      "CURRENT_DATE",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURRENT_USER",
+      "DATABASE",
+      "DELETE",
+      "DISTINCT",
+      "DROP",
+      "ELSE",
+      "EXISTS",
+      "FALSE",
+      "FOR",
+      "FROM",
+      "FULL",
+      "GRANT",
+      "GROUP",
+      "HAVING",
+      "IN",
+      "INCREMENT",
+      "INNER",
+      "INSERT",
+      "INTO",
+      "IS",
+      "JOIN",
+      "LEFT",
+      "LIKE",
+      "NOT",
+      "NULL",
+      "OF",
+      "ON",
+      "OR",
+      "ORDER",
+      "OUTER",
+      "PRIMARY",
+      "REFERENCES",
+      "RIGHT",
+      "SELECT",
+      "SET",
+      "SOME",
+      "TABLE",
+      "THEN",
+      "TO",
+      "UNION",
+      "UNIQUE",
+      "UPDATE",
+      "USER",
+      "USING",
+      "VALUES",
+      "VIEW",
+      "WHERE",
+      "WITH"
     ],
     "tsql": [
-      "ABSOLUTE","ACTION","ADD","ADMIN","AFTER","AGGREGATE","ALIAS","ALL","ALLOCATE",
-      "ALTER","AND","ANY","ARE","AS","ASC","ASSERTION","AT","AUTHORIZATION",
-      "BACKUP","BEFORE","BEGIN","BETWEEN","BINARY","BIT","BLOB","BOTH","BREAK",
-      "BROWSE","BULK","BY","CALL","CASE","CAST","CATALOG","CHECK","CHECKPOINT",
-      "CLOSE","CLUSTERED","COLLATE","COLLATION","COLUMN","COMMIT","COMPUTE",
-      "CONSTRAINT","CONTAINS","CONTAINSTABLE","CONTINUE","CONVERT","CREATE","CROSS",
-      "CURRENT","CURRENT_DATE","CURRENT_TIME","CURRENT_TIMESTAMP","CURSOR","DATABASE",
-      "DBCC","DEALLOCATE","DEC","DECIMAL","DECLARE","DEFAULT","DELETE","DENY","DESC",
-      "DISK","DISTINCT","DISTRIBUTED","DOUBLE","DROP","DUAL","DUMP","ELSE","END",
-      "ERRLVL","ESCAPE","EXCEPT","EXEC","EXECUTE","EXISTS","EXIT","EXTERNAL","FALSE",
-      "FETCH","FILE","FILLFACTOR","FLOAT","FOR","FOREIGN","FREETEXT","FREETEXTTABLE",
-      "FROM","FULL","FUNCTION","GOTO","GRANT","GROUP","GROUP_CONCAT","HAVING",
-      "HOLDLOCK","IDENTITY","IDENTITY_INSERT","IDENTITYCOL","IF","IN","INDEX",
-      "INNER","INSERT","INT","INTEGER","INTERSECT","INTO","IS","ISNULL","ISOLATION",
-      "JOIN","KEY","KILL","LANGUAGE","LAST","LEFT","LEVEL","LIKE","LINENO","LOAD",
-      "LOCAL","LOCK","LONGBLOB","LONGTEXT","MATCH","MEDIUMBLOB","MEDIUMINT","MEDIUMTEXT",
-      "MERGE","NATIONAL","NATURAL","NCHAR","NONCLUSTERED","NONE","NOT","NOTIN","NOTRACK",
-      "NULL","NULLIF","NUMERIC","OF","OFF","OFFSETS","ON","ONCE","ONLY","OPEN",
-      "OPENKEY","OPENQUERY","OPENROWSET","OPENXML","OPTION","OR","ORDER","OUTER",
-      "OVER","OUTPUT","PARTITION","PERCENT","PLAN","PRECISION","PRIMARY","PRINT",
-      "PRIVILEGES","PROC","PROCEDURE","PROCESSLIST","PUBLIC","PURGE","RAID","RAISERROR",
-      "RANGE","READ","READ_WRITE","READTEXT","RECONFIGURE","REFERENCES","REFERENCING",
-      "RELEASE","RENAME","REPEAT","REPLACE","REPLICATION","REQUIRE","RESIGNAL","RESTRICT",
-      "RETURN","REVOKE","RIGHT","ROLE","ROLLBACK","ROLLUP","ROUTINE","ROW","ROWCOUNT",
-      "ROWGUIDCOL","ROWS","RULE","SAVEPOINT","SCHEMA","SCHEMA_NAME","SCOPE","SCOPE_IDENTITY",
-      "SCROLL","SEARCH","SECOND","SECTION","SECURITY","SELECT","SEMANTICKEYPHRASETABLE",
-      "SEMANTICSIMILARITYDETAILSTABLE","SEMANTICSIMILARITYTABLE","SENSITIVE","SEQUENCE",
-      "SERVER","SESSION","SESSION_USER","SET","SETIDENTITY_INSERT","SETUSER","SHARE",
-      "SHOW","SHUTDOWN","SIGNAL","SIMILAR","SMALLINT","SMALLMONEY","SOME","SPATIAL",
-      "SPECIFIC","SQL","SQL_BIG_RESULT","SQL_CALC_FOUND_ROWS","SQL_SMALL_RESULT",
-      "SQLCODE","SQLERROR","SQLSTATE","STATISTICS","STATISTICS_INCREMENTAL","STATUS",
-      "STOP","STRAIGHT_JOIN","SUCH","SUSER_NAME","SUSER_SNAME","SYSTEM_USER","TABLE",
-      "TABLESAMPLE","TABLOCKX","TEMPORARY","TERMINATE","TEXT","TEXTSIZE","THEN","TIES",
-      "TIMESTAMP","TINYINT","TOP","TRAN","TRANSACTION","TREAT","TRIGGER","TRUE","TRUNCATE",
-      "TRY","TRY_CONVERT","TSQL_ONLY","UNDO","UNION","UNIQUE","UNIQUEIDENTIFIER","UPDATE",
-      "UPDATETEXT","UPPER","USAGE","USE","USER","USER_NAME","USING","VALUE","VALUES",
-      "VARBINARY","VARBINARY_MAX","VARCHAR","VARCHAR_MAX","VARCHARACTER","VARYING",
-      "WAITFOR","WHEN","WHENEVER","WHERE","WHILE","WITH","WITHIN","WITHOUT","WORK",
-      "WRITETEXT","X509","XMLEXISTS","XMLNAMESPACES"
+      "ABSOLUTE",
+      "ACTION",
+      "ADD",
+      "ADMIN",
+      "AFTER",
+      "AGGREGATE",
+      "ALIAS",
+      "ALL",
+      "ALLOCATE",
+      "ALTER",
+      "AND",
+      "ANY",
+      "ARE",
+      "AS",
+      "ASC",
+      "ASSERTION",
+      "AT",
+      "AUTHORIZATION",
+      "BACKUP",
+      "BEFORE",
+      "BEGIN",
+      "BETWEEN",
+      "BINARY",
+      "BIT",
+      "BLOB",
+      "BOTH",
+      "BREAK",
+      "BROWSE",
+      "BULK",
+      "BY",
+      "CALL",
+      "CASE",
+      "CAST",
+      "CATALOG",
+      "CHECK",
+      "CHECKPOINT",
+      "CLOSE",
+      "CLUSTERED",
+      "COLLATE",
+      "COLLATION",
+      "COLUMN",
+      "COMMIT",
+      "COMPUTE",
+      "CONSTRAINT",
+      "CONTAINS",
+      "CONTAINSTABLE",
+      "CONTINUE",
+      "CONVERT",
+      "CREATE",
+      "CROSS",
+      "CURRENT",
+      "CURRENT_DATE",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURSOR",
+      "DATABASE",
+      "DBCC",
+      "DEALLOCATE",
+      "DEC",
+      "DECIMAL",
+      "DECLARE",
+      "DEFAULT",
+      "DELETE",
+      "DENY",
+      "DESC",
+      "DISK",
+      "DISTINCT",
+      "DISTRIBUTED",
+      "DOUBLE",
+      "DROP",
+      "DUAL",
+      "DUMP",
+      "ELSE",
+      "END",
+      "ERRLVL",
+      "ESCAPE",
+      "EXCEPT",
+      "EXEC",
+      "EXECUTE",
+      "EXISTS",
+      "EXIT",
+      "EXTERNAL",
+      "FALSE",
+      "FETCH",
+      "FILE",
+      "FILLFACTOR",
+      "FLOAT",
+      "FOR",
+      "FOREIGN",
+      "FREETEXT",
+      "FREETEXTTABLE",
+      "FROM",
+      "FULL",
+      "FUNCTION",
+      "GOTO",
+      "GRANT",
+      "GROUP",
+      "GROUP_CONCAT",
+      "HAVING",
+      "HOLDLOCK",
+      "IDENTITY",
+      "IDENTITY_INSERT",
+      "IDENTITYCOL",
+      "IF",
+      "IN",
+      "INDEX",
+      "INNER",
+      "INSERT",
+      "INT",
+      "INTEGER",
+      "INTERSECT",
+      "INTO",
+      "IS",
+      "ISNULL",
+      "ISOLATION",
+      "JOIN",
+      "KEY",
+      "KILL",
+      "LANGUAGE",
+      "LAST",
+      "LEFT",
+      "LEVEL",
+      "LIKE",
+      "LINENO",
+      "LOAD",
+      "LOCAL",
+      "LOCK",
+      "LONGBLOB",
+      "LONGTEXT",
+      "MATCH",
+      "MEDIUMBLOB",
+      "MEDIUMINT",
+      "MEDIUMTEXT",
+      "MERGE",
+      "NATIONAL",
+      "NATURAL",
+      "NCHAR",
+      "NONCLUSTERED",
+      "NONE",
+      "NOT",
+      "NOTIN",
+      "NOTRACK",
+      "NULL",
+      "NULLIF",
+      "NUMERIC",
+      "OF",
+      "OFF",
+      "OFFSETS",
+      "ON",
+      "ONCE",
+      "ONLY",
+      "OPEN",
+      "OPENKEY",
+      "OPENQUERY",
+      "OPENROWSET",
+      "OPENXML",
+      "OPTION",
+      "OR",
+      "ORDER",
+      "OUTER",
+      "OVER",
+      "OUTPUT",
+      "PARTITION",
+      "PERCENT",
+      "PLAN",
+      "PRECISION",
+      "PRIMARY",
+      "PRINT",
+      "PRIVILEGES",
+      "PROC",
+      "PROCEDURE",
+      "PROCESSLIST",
+      "PUBLIC",
+      "PURGE",
+      "RAID",
+      "RAISERROR",
+      "RANGE",
+      "READ",
+      "READ_WRITE",
+      "READTEXT",
+      "RECONFIGURE",
+      "REFERENCES",
+      "REFERENCING",
+      "RELEASE",
+      "RENAME",
+      "REPEAT",
+      "REPLACE",
+      "REPLICATION",
+      "REQUIRE",
+      "RESIGNAL",
+      "RESTRICT",
+      "RETURN",
+      "REVOKE",
+      "RIGHT",
+      "ROLE",
+      "ROLLBACK",
+      "ROLLUP",
+      "ROUTINE",
+      "ROW",
+      "ROWCOUNT",
+      "ROWGUIDCOL",
+      "ROWS",
+      "RULE",
+      "SAVEPOINT",
+      "SCHEMA",
+      "SCHEMA_NAME",
+      "SCOPE",
+      "SCOPE_IDENTITY",
+      "SCROLL",
+      "SEARCH",
+      "SECOND",
+      "SECTION",
+      "SECURITY",
+      "SELECT",
+      "SEMANTICKEYPHRASETABLE",
+      "SEMANTICSIMILARITYDETAILSTABLE",
+      "SEMANTICSIMILARITYTABLE",
+      "SENSITIVE",
+      "SEQUENCE",
+      "SERVER",
+      "SESSION",
+      "SESSION_USER",
+      "SET",
+      "SETIDENTITY_INSERT",
+      "SETUSER",
+      "SHARE",
+      "SHOW",
+      "SHUTDOWN",
+      "SIGNAL",
+      "SIMILAR",
+      "SMALLINT",
+      "SMALLMONEY",
+      "SOME",
+      "SPATIAL",
+      "SPECIFIC",
+      "SQL",
+      "SQL_BIG_RESULT",
+      "SQL_CALC_FOUND_ROWS",
+      "SQL_SMALL_RESULT",
+      "SQLCODE",
+      "SQLERROR",
+      "SQLSTATE",
+      "STATISTICS",
+      "STATISTICS_INCREMENTAL",
+      "STATUS",
+      "STOP",
+      "STRAIGHT_JOIN",
+      "SUCH",
+      "SUSER_NAME",
+      "SUSER_SNAME",
+      "SYSTEM_USER",
+      "TABLE",
+      "TABLESAMPLE",
+      "TABLOCKX",
+      "TEMPORARY",
+      "TERMINATE",
+      "TEXT",
+      "TEXTSIZE",
+      "THEN",
+      "TIES",
+      "TIMESTAMP",
+      "TINYINT",
+      "TOP",
+      "TRAN",
+      "TRANSACTION",
+      "TREAT",
+      "TRIGGER",
+      "TRUE",
+      "TRUNCATE",
+      "TRY",
+      "TRY_CONVERT",
+      "TSQL_ONLY",
+      "UNDO",
+      "UNION",
+      "UNIQUE",
+      "UNIQUEIDENTIFIER",
+      "UPDATE",
+      "UPDATETEXT",
+      "UPPER",
+      "USAGE",
+      "USE",
+      "USER",
+      "USER_NAME",
+      "USING",
+      "VALUE",
+      "VALUES",
+      "VARBINARY",
+      "VARBINARY_MAX",
+      "VARCHAR",
+      "VARCHAR_MAX",
+      "VARCHARACTER",
+      "VARYING",
+      "WAITFOR",
+      "WHEN",
+      "WHENEVER",
+      "WHERE",
+      "WHILE",
+      "WITH",
+      "WITHIN",
+      "WITHOUT",
+      "WORK",
+      "WRITETEXT",
+      "X509",
+      "XMLEXISTS",
+      "XMLNAMESPACES"
     ],
     "postgresql": [
-      "ABORT","ABSOLUTE","ACCESS","ACTION","ADD","ADMIN","AFTER","AGGREGATE","ALL",
-      "ALTER","AND","ANY","ARRAY","AS","ASC","ASENSITIVE","ASSERT","ASSIGNMENT","ASYMMETRIC",
-      "AT","ATOMIC","ATTACH","ATTRIBUTE","AUTHORIZATION","BACKWARD","BEFORE","BEGIN","BETWEEN",
-      "BIGINT","BINARY","BIT","BLOB","BOOLEAN","BOTH","BY","CALL","CALLED","CASE","CAST",
-      "CATALOG","CATCH","CEIL","CHAIN","CHAR","CHARACTER","CHARACTER_LENGTH","CHARACTERISTICS",
-      "CHARINDEX","CHECKPOINT","CLASS","CLOSE","CLUSTER","COALESCE","COLLATE","COLLATION",
-      "COLLECT","COLUMN","COMMENT","COMMENTS","COMMIT","COMMITTED","COMPARABLE","COMPARE",
-      "COMPUTED","CONCAT","CONDITION","CONDITIONAL","CONSTRAINT","CONSTRAINTS","CONSTRUCTOR",
-      "CONTAINS","CONTAINSTABLE","CONTEXT","CONTINUE","CONVERSION","CONVERT","COPY","CREATE",
-      "CROSS","CUBE","CULTURE","CURRENT","CURRENT_CATALOG","CURRENT_DATE","CURRENT_DEFAULT_TRANSFORM_GROUP",
-      "CURRENT_PATH","CURRENT_ROLE","CURRENT_SCHEMA","CURRENT_TIME","CURRENT_TIMESTAMP",
-      "CURRENT_TRANSFORM_GROUP_FOR_TYPE","CURRENT_USER","CURSOR","CYCLE","DATA","DATABASE",
-      "DATABASES","DATE","DATETIME","DATETIME2","DATETIMEOFFSET","DAY","DEALLOCATE","DECIMAL",
-      "DECLARE","DEFAULT","DEFAULTS","DEFERRABLE","DEFERRED","DEFINE","DEFINER","DELETE",
-      "DELIMITERS","DELIVER","DENSE_RANK","DENY","DEPTH","DEREF","DESC","DESCRIBE","DESCRIPTOR",
-      "DETERMINISTIC","DETACH","DETERMINISM","DIAGNOSTICS","DISALLOW","DISCONNECT","DISTINCT",
-      "DISTRIBUTED","DIVE","DO","DOCUMENT","DOES","DOMAIN","DOUBLE","DROP","DROPLET","DUAL",
-      "DUMP","DYNAMIC","EACH","EDGE","ELEMENT","ELSE","ENCODING","ENCRYPTED","END","ENDS",
-      "ENFORCED","ENUM","EQUALS","ESCAPE","ESCAPED","EXCEPT","EXCEPTION","EXCHANGE","EXCLUDE",
-      "EXCLUDING","EXCLUSIVE","EXEC","EXECUTE","EXISTS","EXIT","EXPAND","EXPECT","EXPIRE",
-      "EXPLAIN","EXPORT","EXPRESSION","EXTENDS","EXTENSION","EXTERNAL","EXTERNALLY",
-      "EXTRACT","FALSE","FAMILY","FETCH","FIELDS","FILE","FILLFACTOR","FILTER","FINAL",
-      "FINALIZE","FIND","FINISH","FIRST","FLOAT","FLOOR","FOLLOWING","FOR","FORCE","FOREIGN",
-      "FORALL","FORMAT","FOUND","FRAME","FRAMES","FREETEXT","FREETEXTTABLE","FREEZE","FROM",
-      "FROMDATEFORMAT","FULL","FUNCTION","FUSION","GAPFILL","GATHER","GENERAL","GENERATED",
-      "GENERICS","GEOM","GEOMETRY","GET","GLOB","GLOBAL","GO","GOAL","GOTO","GRANT","GRANTED",
-      "GRANTS","GRAPH","GREATEST","GREEN","GROUP","GROUP_CONCAT","GROUPING","GROUPS","GTID",
-      "GUARD","GUARDED","GUID","HANDLING","HASH","HAVING","HEADER","HEADERS","HELP","HEX",
-      "HIERARCHIES","HIERARCHY","HINGE","HINT","HISTOGRAM","HOLD","HOLDING","HOLDS","HOLES",
-      "HOMOGENEOUS","HOST","HOSTS","HOUR","HUGE","IDENTITY","IDENTITY_INSERT","IDENTITYCOL",
-      "IF","IGNORE","ILIKE","IMMEDIATE","IMMUTABLE","IMPLICIT","IMPLICITLY","IMPORT","IN",
-      "INCLUDING","INCLUDE","INCLUSIVE","INCREMENT","INDEX","INDEXED","INDEXES","INDEXING",
-      "INDEXTYPE","INDICATOR","INDICES","INDIRECTION","INITIAL","INITIALLY","INLINE","INNER",
-      "INOUT","INPUT","INPUTFORMAT","INPUTSELECTFORMAT","INSERT","INSERTDATE","INSERTTIME",
-      "INSTANCE","INSTANCEOF","INSTANCETYPE","INSTEAD","INT","INTEGER","INTEGRITY","INTENT",
-      "INTER","INTERACTION","INTERLEAVE","INTERNAL","INTEROP","INTERSECT","INTO","INTRODUCTION",
-      "INTROSPECT","INTUITION","INVERT","INVERTED","INVOKE","INWARD","IOTA","IRIS","IS",
-      "ISCLOSE","ISDISTINCT","ISKEY","ISNAN","ISNULL","ISODATE","ISOLATE","ISOLATION","ISSUE",
-      "ISTITLE","ITERATE","ITSELF","JARO","JAVA","JAVASCRIPT","JOIN","JOINED","JOINER","JOINING",
-      "JOINPLANS","JOINS","JSON","JSON_PATH","JSON_QUERY","JSON_VALUE","JSONB","JSONL","JSONPATH",
-      "JSONPOINTER","JSONSCHEMA","JSONTEXT","JSONTYPE","JOURNAL","JOURNALING","JOURNEY","JUDGED",
-      "JUDGMENT","JUMP","JUNCTION","JUNK","JUSTIFICATION","KBYTES","KEEPLIVES","KEEPOUT","KEEPREFS",
-      "KEY","KEYBY","KEYED","KEYS","KEYSET","KEYSTATE","KEYSTORE","KEYSTROKE","KEYWORD","KEYWORDED",
-      "KEYWORDID","KEYWORDONLY","KEYWORDS","KEYWORDSET","KEYWORDTYPE","KILL","KILLED","KILLING",
-      "KILO","KILOBYTE","KIND","KINDLE","KINETIC","KINETOSCOPE","KINGDOM","KINSHIP","KINSHIP_OP",
-      "KINSFOLK","KINSFOLK_I","KINSVOLK","KIT","KITED","KITHE","KITHING","KITRED","KITS","KITTENS",
-      "KITTLED","KITTLER","KITTLES","KITTLING","KITTY"
+      "ABORT",
+      "ABSOLUTE",
+      "ACCESS",
+      "ACTION",
+      "ADD",
+      "ADMIN",
+      "AFTER",
+      "AGGREGATE",
+      "ALL",
+      "ALTER",
+      "AND",
+      "ANY",
+      "ARRAY",
+      "AS",
+      "ASC",
+      "ASENSITIVE",
+      "ASSERT",
+      "ASSIGNMENT",
+      "ASYMMETRIC",
+      "AT",
+      "ATOMIC",
+      "ATTACH",
+      "ATTRIBUTE",
+      "AUTHORIZATION",
+      "BACKWARD",
+      "BEFORE",
+      "BEGIN",
+      "BETWEEN",
+      "BIGINT",
+      "BINARY",
+      "BIT",
+      "BLOB",
+      "BOOLEAN",
+      "BOTH",
+      "BY",
+      "CALL",
+      "CALLED",
+      "CASE",
+      "CAST",
+      "CATALOG",
+      "CATCH",
+      "CEIL",
+      "CHAIN",
+      "CHAR",
+      "CHARACTER",
+      "CHARACTER_LENGTH",
+      "CHARACTERISTICS",
+      "CHARINDEX",
+      "CHECKPOINT",
+      "CLASS",
+      "CLOSE",
+      "CLUSTER",
+      "COALESCE",
+      "COLLATE",
+      "COLLATION",
+      "COLLECT",
+      "COLUMN",
+      "COMMENT",
+      "COMMENTS",
+      "COMMIT",
+      "COMMITTED",
+      "COMPARABLE",
+      "COMPARE",
+      "COMPUTED",
+      "CONCAT",
+      "CONDITION",
+      "CONDITIONAL",
+      "CONSTRAINT",
+      "CONSTRAINTS",
+      "CONSTRUCTOR",
+      "CONTAINS",
+      "CONTAINSTABLE",
+      "CONTEXT",
+      "CONTINUE",
+      "CONVERSION",
+      "CONVERT",
+      "COPY",
+      "CREATE",
+      "CROSS",
+      "CUBE",
+      "CULTURE",
+      "CURRENT",
+      "CURRENT_CATALOG",
+      "CURRENT_DATE",
+      "CURRENT_DEFAULT_TRANSFORM_GROUP",
+      "CURRENT_PATH",
+      "CURRENT_ROLE",
+      "CURRENT_SCHEMA",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURRENT_TRANSFORM_GROUP_FOR_TYPE",
+      "CURRENT_USER",
+      "CURSOR",
+      "CYCLE",
+      "DATA",
+      "DATABASE",
+      "DATABASES",
+      "DATE",
+      "DATETIME",
+      "DATETIME2",
+      "DATETIMEOFFSET",
+      "DAY",
+      "DEALLOCATE",
+      "DECIMAL",
+      "DECLARE",
+      "DEFAULT",
+      "DEFAULTS",
+      "DEFERRABLE",
+      "DEFERRED",
+      "DEFINE",
+      "DEFINER",
+      "DELETE",
+      "DELIMITERS",
+      "DELIVER",
+      "DENSE_RANK",
+      "DENY",
+      "DEPTH",
+      "DEREF",
+      "DESC",
+      "DESCRIBE",
+      "DESCRIPTOR",
+      "DETERMINISTIC",
+      "DETACH",
+      "DETERMINISM",
+      "DIAGNOSTICS",
+      "DISALLOW",
+      "DISCONNECT",
+      "DISTINCT",
+      "DISTRIBUTED",
+      "DIVE",
+      "DO",
+      "DOCUMENT",
+      "DOES",
+      "DOMAIN",
+      "DOUBLE",
+      "DROP",
+      "DROPLET",
+      "DUAL",
+      "DUMP",
+      "DYNAMIC",
+      "EACH",
+      "EDGE",
+      "ELEMENT",
+      "ELSE",
+      "ENCODING",
+      "ENCRYPTED",
+      "END",
+      "ENDS",
+      "ENFORCED",
+      "ENUM",
+      "EQUALS",
+      "ESCAPE",
+      "ESCAPED",
+      "EXCEPT",
+      "EXCEPTION",
+      "EXCHANGE",
+      "EXCLUDE",
+      "EXCLUDING",
+      "EXCLUSIVE",
+      "EXEC",
+      "EXECUTE",
+      "EXISTS",
+      "EXIT",
+      "EXPAND",
+      "EXPECT",
+      "EXPIRE",
+      "EXPLAIN",
+      "EXPORT",
+      "EXPRESSION",
+      "EXTENDS",
+      "EXTENSION",
+      "EXTERNAL",
+      "EXTERNALLY",
+      "EXTRACT",
+      "FALSE",
+      "FAMILY",
+      "FETCH",
+      "FIELDS",
+      "FILE",
+      "FILLFACTOR",
+      "FILTER",
+      "FINAL",
+      "FINALIZE",
+      "FIND",
+      "FINISH",
+      "FIRST",
+      "FLOAT",
+      "FLOOR",
+      "FOLLOWING",
+      "FOR",
+      "FORCE",
+      "FOREIGN",
+      "FORALL",
+      "FORMAT",
+      "FOUND",
+      "FRAME",
+      "FRAMES",
+      "FREETEXT",
+      "FREETEXTTABLE",
+      "FREEZE",
+      "FROM",
+      "FROMDATEFORMAT",
+      "FULL",
+      "FUNCTION",
+      "FUSION",
+      "GAPFILL",
+      "GATHER",
+      "GENERAL",
+      "GENERATED",
+      "GENERICS",
+      "GEOM",
+      "GEOMETRY",
+      "GET",
+      "GLOB",
+      "GLOBAL",
+      "GO",
+      "GOAL",
+      "GOTO",
+      "GRANT",
+      "GRANTED",
+      "GRANTS",
+      "GRAPH",
+      "GREATEST",
+      "GREEN",
+      "GROUP",
+      "GROUP_CONCAT",
+      "GROUPING",
+      "GROUPS",
+      "GTID",
+      "GUARD",
+      "GUARDED",
+      "GUID",
+      "HANDLING",
+      "HASH",
+      "HAVING",
+      "HEADER",
+      "HEADERS",
+      "HELP",
+      "HEX",
+      "HIERARCHIES",
+      "HIERARCHY",
+      "HINGE",
+      "HINT",
+      "HISTOGRAM",
+      "HOLD",
+      "HOLDING",
+      "HOLDS",
+      "HOLES",
+      "HOMOGENEOUS",
+      "HOST",
+      "HOSTS",
+      "HOUR",
+      "HUGE",
+      "IDENTITY",
+      "IDENTITY_INSERT",
+      "IDENTITYCOL",
+      "IF",
+      "IGNORE",
+      "ILIKE",
+      "IMMEDIATE",
+      "IMMUTABLE",
+      "IMPLICIT",
+      "IMPLICITLY",
+      "IMPORT",
+      "IN",
+      "INCLUDING",
+      "INCLUDE",
+      "INCLUSIVE",
+      "INCREMENT",
+      "INDEX",
+      "INDEXED",
+      "INDEXES",
+      "INDEXING",
+      "INDEXTYPE",
+      "INDICATOR",
+      "INDICES",
+      "INDIRECTION",
+      "INITIAL",
+      "INITIALLY",
+      "INLINE",
+      "INNER",
+      "INOUT",
+      "INPUT",
+      "INPUTFORMAT",
+      "INPUTSELECTFORMAT",
+      "INSERT",
+      "INSERTDATE",
+      "INSERTTIME",
+      "INSTANCE",
+      "INSTANCEOF",
+      "INSTANCETYPE",
+      "INSTEAD",
+      "INT",
+      "INTEGER",
+      "INTEGRITY",
+      "INTENT",
+      "INTER",
+      "INTERACTION",
+      "INTERLEAVE",
+      "INTERNAL",
+      "INTEROP",
+      "INTERSECT",
+      "INTO",
+      "INTRODUCTION",
+      "INTROSPECT",
+      "INTUITION",
+      "INVERT",
+      "INVERTED",
+      "INVOKE",
+      "INWARD",
+      "IOTA",
+      "IRIS",
+      "IS",
+      "ISCLOSE",
+      "ISDISTINCT",
+      "ISKEY",
+      "ISNAN",
+      "ISNULL",
+      "ISODATE",
+      "ISOLATE",
+      "ISOLATION",
+      "ISSUE",
+      "ISTITLE",
+      "ITERATE",
+      "ITSELF",
+      "JARO",
+      "JAVA",
+      "JAVASCRIPT",
+      "JOIN",
+      "JOINED",
+      "JOINER",
+      "JOINING",
+      "JOINPLANS",
+      "JOINS",
+      "JSON",
+      "JSON_PATH",
+      "JSON_QUERY",
+      "JSON_VALUE",
+      "JSONB",
+      "JSONL",
+      "JSONPATH",
+      "JSONPOINTER",
+      "JSONSCHEMA",
+      "JSONTEXT",
+      "JSONTYPE",
+      "JOURNAL",
+      "JOURNALING",
+      "JOURNEY",
+      "JUDGED",
+      "JUDGMENT",
+      "JUMP",
+      "JUNCTION",
+      "JUNK",
+      "JUSTIFICATION",
+      "KBYTES",
+      "KEEPLIVES",
+      "KEEPOUT",
+      "KEEPREFS",
+      "KEY",
+      "KEYBY",
+      "KEYED",
+      "KEYS",
+      "KEYSET",
+      "KEYSTATE",
+      "KEYSTORE",
+      "KEYSTROKE",
+      "KEYWORD",
+      "KEYWORDED",
+      "KEYWORDID",
+      "KEYWORDONLY",
+      "KEYWORDS",
+      "KEYWORDSET",
+      "KEYWORDTYPE",
+      "KILL",
+      "KILLED",
+      "KILLING",
+      "KILO",
+      "KILOBYTE",
+      "KIND",
+      "KINDLE",
+      "KINETIC",
+      "KINETOSCOPE",
+      "KINGDOM",
+      "KINSHIP",
+      "KINSHIP_OP",
+      "KINSFOLK",
+      "KINSFOLK_I",
+      "KINSVOLK",
+      "KIT",
+      "KITED",
+      "KITHE",
+      "KITHING",
+      "KITRED",
+      "KITS",
+      "KITTENS",
+      "KITTLED",
+      "KITTLER",
+      "KITTLES",
+      "KITTLING",
+      "KITTY"
     ],
     "mysql": [
-      "ACCESSIBLE","ADD","ALL","ALTER","ANALYZE","AND","AS","ASC","ASENSITIVE",
-      "BEFORE","BETWEEN","BIGINT","BINARY","BLOB","BOTH","BY","CALL","CASCADE","CASE","CHANGE",
-      "CHAR","CHARACTER","CHECK","COLLATE","COLUMN","CONDITION","CONSTRAINT","CONTINUE","CONVERT",
-      "CREATE","CROSS","CURRENT_DATE","CURRENT_TIME","CURRENT_TIMESTAMP","CURRENT_USER","CURSOR",
-      "DATABASE","DATABASES","DAY_HOUR","DAY_MICROSECOND","DAY_MINUTE","DAY_SECOND","DEC","DECIMAL",
-      "DECLARE","DEFAULT","DELAYED","DELETE","DESC","DESCRIBE","DETERMINISTIC","DISTINCT",
-      "DISTINCTROW","DIV","DOUBLE","DROP","DUAL","EACH","ELSE","ELSEIF","ENCLOSED","ESCAPED",
-      "EXISTS","EXIT","EXPLAIN","FALSE","FETCH","FLOAT","FLOAT4","FLOAT8","FOR","FORCE","FOREIGN",
-      "FORK","FROM","FULLTEXT","FUNCTION","GENERAL","GENERAL_PARTITION","GET","GRANT","GROUP",
-      "HAVING","HIGH_PRIORITY","HOUR_MICROSECOND","HOUR_MINUTE","HOUR_SECOND","IF","IGNORE",
-      "IGNORE_SERVER_IDS","IN","INDEX","INFILE","INNER","INOUT","INSENSITIVE","INSERT","INT",
-      "INT1","INT2","INT3","INT4","INT8","INTEGER","INTERVAL","INTO","IO_AFTER_GTIDS",
-      "IO_BEFORE_GTIDS","IS","ITERATE","JOIN","KEY","KEYS","KILL","LEADING","LEAVE","LEFT",
-      "LIKE","LIMIT","LINEAR","LINES","LOAD","LOCALTIME","LOCALTIMESTAMP","LOCK","LONG","LONGBLOB",
-      "LONGTEXT","LOOP","LOW_PRIORITY","MASTER_BIND","MASTER_SSL_VERIFY_SERVER_CERT","MATCH",
-      "MAXVALUE","MEDIUMBLOB","MEDIUMINT","MEDIUMTEXT","MIDDLEINT","MINUTE_MICROSECOND",
-      "MINUTE_SECOND","MOD","MODIFIES","NATURAL","NOT","NO_WRITE_TO_BINLOG","NULL","NUMERIC",
-      "ON","ONE_SHOT","OR","ORDER","OUT","OUTER","OUTFILE","PARTITION","PRECISION","PRIMARY",
-      "PROCEDURE","PURGE","RANGE","READ","READ_WRITE","READS","REAL","REFERENCES","REGEXP",
-      "RELEASE","RENAME","REPEAT","REPLACE","REQUIRE","RESIGNAL","RESTRICT","RETURN","REVOKE",
-      "RIGHT","RLIKE","SCHEMA","SCHEMAS","SECOND_MICROSECOND","SELECT","SENSITIVE","SEPARATOR",
-      "SET","SHOW","SIGNAL","SLOW","SMALLINT","SPATIAL","SPECIFIC","SQL","SQL_BIG_RESULT",
-      "SQL_CALC_FOUND_ROWS","SQL_SMALL_RESULT","SQLEXCEPTION","SQLSTATE","SQLWARNING","SQL_LINEAR_PLAN_SEARCH",
-      "SSL","STARTING","STRAIGHT_JOIN","TABLE","TERMINATED","THEN","TINYBLOB","TINYINT","TINYTEXT",
-      "TO","TRAILING","TRIGGER","TRUE","UNDO","UNION","UNIQUE","UNLOCK","UNSIGNED","UPDATE",
-      "USAGE","USE","USING","UTC_DATE","UTC_TIME","UTC_TIMESTAMP","VALUES","VARBINARY","VARCHAR",
-      "VARCHARACTER","VARYING","WHEN","WHERE","WHILE","WITH","WRITE","X509","XOR","YEAR_MONTH",
+      "ACCESSIBLE",
+      "ADD",
+      "ALL",
+      "ALTER",
+      "ANALYZE",
+      "AND",
+      "AS",
+      "ASC",
+      "ASENSITIVE",
+      "BEFORE",
+      "BETWEEN",
+      "BIGINT",
+      "BINARY",
+      "BLOB",
+      "BOTH",
+      "BY",
+      "CALL",
+      "CASCADE",
+      "CASE",
+      "CHANGE",
+      "CHAR",
+      "CHARACTER",
+      "CHECK",
+      "COLLATE",
+      "COLUMN",
+      "CONDITION",
+      "CONSTRAINT",
+      "CONTINUE",
+      "CONVERT",
+      "CREATE",
+      "CROSS",
+      "CURRENT_DATE",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURRENT_USER",
+      "CURSOR",
+      "DATABASE",
+      "DATABASES",
+      "DAY_HOUR",
+      "DAY_MICROSECOND",
+      "DAY_MINUTE",
+      "DAY_SECOND",
+      "DEC",
+      "DECIMAL",
+      "DECLARE",
+      "DEFAULT",
+      "DELAYED",
+      "DELETE",
+      "DESC",
+      "DESCRIBE",
+      "DETERMINISTIC",
+      "DISTINCT",
+      "DISTINCTROW",
+      "DIV",
+      "DOUBLE",
+      "DROP",
+      "DUAL",
+      "EACH",
+      "ELSE",
+      "ELSEIF",
+      "ENCLOSED",
+      "ESCAPED",
+      "EXISTS",
+      "EXIT",
+      "EXPLAIN",
+      "FALSE",
+      "FETCH",
+      "FLOAT",
+      "FLOAT4",
+      "FLOAT8",
+      "FOR",
+      "FORCE",
+      "FOREIGN",
+      "FORK",
+      "FROM",
+      "FULLTEXT",
+      "FUNCTION",
+      "GENERAL",
+      "GENERAL_PARTITION",
+      "GET",
+      "GRANT",
+      "GROUP",
+      "HAVING",
+      "HIGH_PRIORITY",
+      "HOUR_MICROSECOND",
+      "HOUR_MINUTE",
+      "HOUR_SECOND",
+      "IF",
+      "IGNORE",
+      "IGNORE_SERVER_IDS",
+      "IN",
+      "INDEX",
+      "INFILE",
+      "INNER",
+      "INOUT",
+      "INSENSITIVE",
+      "INSERT",
+      "INT",
+      "INT1",
+      "INT2",
+      "INT3",
+      "INT4",
+      "INT8",
+      "INTEGER",
+      "INTERVAL",
+      "INTO",
+      "IO_AFTER_GTIDS",
+      "IO_BEFORE_GTIDS",
+      "IS",
+      "ITERATE",
+      "JOIN",
+      "KEY",
+      "KEYS",
+      "KILL",
+      "LEADING",
+      "LEAVE",
+      "LEFT",
+      "LIKE",
+      "LIMIT",
+      "LINEAR",
+      "LINES",
+      "LOAD",
+      "LOCALTIME",
+      "LOCALTIMESTAMP",
+      "LOCK",
+      "LONG",
+      "LONGBLOB",
+      "LONGTEXT",
+      "LOOP",
+      "LOW_PRIORITY",
+      "MASTER_BIND",
+      "MASTER_SSL_VERIFY_SERVER_CERT",
+      "MATCH",
+      "MAXVALUE",
+      "MEDIUMBLOB",
+      "MEDIUMINT",
+      "MEDIUMTEXT",
+      "MIDDLEINT",
+      "MINUTE_MICROSECOND",
+      "MINUTE_SECOND",
+      "MOD",
+      "MODIFIES",
+      "NATURAL",
+      "NOT",
+      "NO_WRITE_TO_BINLOG",
+      "NULL",
+      "NUMERIC",
+      "ON",
+      "ONE_SHOT",
+      "OR",
+      "ORDER",
+      "OUT",
+      "OUTER",
+      "OUTFILE",
+      "PARTITION",
+      "PRECISION",
+      "PRIMARY",
+      "PROCEDURE",
+      "PURGE",
+      "RANGE",
+      "READ",
+      "READ_WRITE",
+      "READS",
+      "REAL",
+      "REFERENCES",
+      "REGEXP",
+      "RELEASE",
+      "RENAME",
+      "REPEAT",
+      "REPLACE",
+      "REQUIRE",
+      "RESIGNAL",
+      "RESTRICT",
+      "RETURN",
+      "REVOKE",
+      "RIGHT",
+      "RLIKE",
+      "SCHEMA",
+      "SCHEMAS",
+      "SECOND_MICROSECOND",
+      "SELECT",
+      "SENSITIVE",
+      "SEPARATOR",
+      "SET",
+      "SHOW",
+      "SIGNAL",
+      "SLOW",
+      "SMALLINT",
+      "SPATIAL",
+      "SPECIFIC",
+      "SQL",
+      "SQL_BIG_RESULT",
+      "SQL_CALC_FOUND_ROWS",
+      "SQL_SMALL_RESULT",
+      "SQLEXCEPTION",
+      "SQLSTATE",
+      "SQLWARNING",
+      "SQL_LINEAR_PLAN_SEARCH",
+      "SSL",
+      "STARTING",
+      "STRAIGHT_JOIN",
+      "TABLE",
+      "TERMINATED",
+      "THEN",
+      "TINYBLOB",
+      "TINYINT",
+      "TINYTEXT",
+      "TO",
+      "TRAILING",
+      "TRIGGER",
+      "TRUE",
+      "UNDO",
+      "UNION",
+      "UNIQUE",
+      "UNLOCK",
+      "UNSIGNED",
+      "UPDATE",
+      "USAGE",
+      "USE",
+      "USING",
+      "UTC_DATE",
+      "UTC_TIME",
+      "UTC_TIMESTAMP",
+      "VALUES",
+      "VARBINARY",
+      "VARCHAR",
+      "VARCHARACTER",
+      "VARYING",
+      "WHEN",
+      "WHERE",
+      "WHILE",
+      "WITH",
+      "WRITE",
+      "X509",
+      "XOR",
+      "YEAR_MONTH",
       "ZEROFILL"
     ],
     "oracle": [
-      "ACCESS","ADD","ALL","ALTER","AND","ANY","AS","ASC","AUDIT",
-      "BY","CHAR","CHECK","CLUSTER","COLUMN","COMMENT","COMPRESS","CONNECT",
-      "CREATE","CURRENT","DATE","DECIMAL","DEFAULT","DELETE","DESC","DISTINCT",
-      "DROP","ELSE","EXCLUSIVE","FILE","FLOAT","FOR","FROM","GRANT",
-      "GROUP","HAVING","IDENTIFIED","IMMEDIATE","IN","INCREMENT","INDEX","INITIAL",
-      "INSERT","INTEGER","INTERSECT","INTO","IS","LEVEL","LIKE","LOCK",
-      "LONG","MAXEXTENTS","MODE","MODIFY","NESTED_TABLE_ID","NOAUDIT","NOCOMPRESS",
-      "NOT","NOWAIT","NULL","NUMBER","OF","OFFLINE","ON","ONLINE","OPTION",
-      "OR","ORDER","PCTFREE","PRIOR","PUBLIC","RAW","RENAME","RESOURCE",
-      "REVOKE","ROW","ROWID","ROWLABEL","ROWNUM","ROWS","SELECT","SESSION",
-      "SET","SHARE","SIZE","SMALLINT","START","SUCCESSFUL","SYNONYM","SYSDATE",
-      "TABLE","THEN","TO","TRIGGER","UID","UNION","UNIQUE","UPDATE","USER",
-      "VALIDATE","VALUES","VARCHAR","VARCHAR2","VIEW","WHENEVER","WHERE","WITH"
+      "ACCESS",
+      "ADD",
+      "ALL",
+      "ALTER",
+      "AND",
+      "ANY",
+      "AS",
+      "ASC",
+      "AUDIT",
+      "BY",
+      "CHAR",
+      "CHECK",
+      "CLUSTER",
+      "COLUMN",
+      "COMMENT",
+      "COMPRESS",
+      "CONNECT",
+      "CREATE",
+      "CURRENT",
+      "DATE",
+      "DECIMAL",
+      "DEFAULT",
+      "DELETE",
+      "DESC",
+      "DISTINCT",
+      "DROP",
+      "ELSE",
+      "EXCLUSIVE",
+      "FILE",
+      "FLOAT",
+      "FOR",
+      "FROM",
+      "GRANT",
+      "GROUP",
+      "HAVING",
+      "IDENTIFIED",
+      "IMMEDIATE",
+      "IN",
+      "INCREMENT",
+      "INDEX",
+      "INITIAL",
+      "INSERT",
+      "INTEGER",
+      "INTERSECT",
+      "INTO",
+      "IS",
+      "LEVEL",
+      "LIKE",
+      "LOCK",
+      "LONG",
+      "MAXEXTENTS",
+      "MODE",
+      "MODIFY",
+      "NESTED_TABLE_ID",
+      "NOAUDIT",
+      "NOCOMPRESS",
+      "NOT",
+      "NOWAIT",
+      "NULL",
+      "NUMBER",
+      "OF",
+      "OFFLINE",
+      "ON",
+      "ONLINE",
+      "OPTION",
+      "OR",
+      "ORDER",
+      "PCTFREE",
+      "PRIOR",
+      "PUBLIC",
+      "RAW",
+      "RENAME",
+      "RESOURCE",
+      "REVOKE",
+      "ROW",
+      "ROWID",
+      "ROWLABEL",
+      "ROWNUM",
+      "ROWS",
+      "SELECT",
+      "SESSION",
+      "SET",
+      "SHARE",
+      "SIZE",
+      "SMALLINT",
+      "START",
+      "SUCCESSFUL",
+      "SYNONYM",
+      "SYSDATE",
+      "TABLE",
+      "THEN",
+      "TO",
+      "TRIGGER",
+      "UID",
+      "UNION",
+      "UNIQUE",
+      "UPDATE",
+      "USER",
+      "VALIDATE",
+      "VALUES",
+      "VARCHAR",
+      "VARCHAR2",
+      "VIEW",
+      "WHENEVER",
+      "WHERE",
+      "WITH"
     ],
     "db2": [
-      "ALIAS","ALL","ALLOCATE","ALLOW","ALTER","AND","ANY","ARE","AS",
-      "ASIN","ASENSITIVE","ASSERTION","ASYMMETRIC","AT","ATOMIC","AUTHORIZATION","AVG",
-      "ATANH","ATAN2","ATAN","ASC","BETWEEN","BIGINT","BINARY","BLOB","BOOLEAN",
-      "BOTH","BY","CALL","CASE","CAST","CEILING","CHAR","CHAR_LENGTH","CHARACTER",
-      "CHARACTER_LENGTH","CHECK","CLOB","CLOSE","COALESCE","COLLATE","COLLATION",
-      "COLUMN","COMMENT","COMMIT","CONDITION","CONNECT","CONNECTION","CONSTRAINT",
-      "CONSTRAINTS","CONTAINS","CONTINUE","CONVERT","COPY","CORRESPONDING","COS",
-      "COSH","COUNT","CREATE","CROSS","CUBE","CUME_DIST","CURRENT","CURRENT_DATE",
-      "CURRENT_DEFAULT_TRANSFORM_GROUP","CURRENT_PATH","CURRENT_ROLE","CURRENT_SCHEMA",
-      "CURRENT_TIME","CURRENT_TIMESTAMP","CURRENT_TRANSFORM_GROUP_FOR_TYPE","CURRENT_USER",
-      "CURSOR","CYCLE","DATA","DATABASE","DATE","DAY","DBINFO","DEALLOCATE","DEC",
-      "DECIMAL","DECLARE","DEFAULT","DEFERRABLE","DEFERRED","DEGREES","DELETE","DELETING",
-      "DELIMIT","DELIMITED","DELIMITER","DENSE_RANK","DEREF","DESC","DESCRIBE","DESCRIPTOR",
-      "DETERMINISTIC","DIAGNOSTICS","DISABLE","DISALLOW","DISCONNECT","DISTINCT","DISTRIBUTED",
-      "DIVIDE","DO","DOCUMENT","DOUBLE","DROP","DSSIZE","DYNAMIC","EACH","ELSE","ELSEIF",
-      "EMPTY","ENCODING","END","ENDEXEC","ENQUEUE","ESCAPE","ESCAPED","EVERY","EXCEPT",
-      "EXCEPTION","EXCLUDE","EXCLUDING","EXCLUSIVE","EXEC","EXECUTE","EXISTS","EXIT","EXP",
-      "EXPLAIN","EXTERNAL","EXTRACT","FALSE","FETCH","FILTER","FINAL","FIRST","FLOAT","FLOOR",
-      "FOR","FOREIGN","FORTRAN","FOUND","FREE","FREEING","FROM","FULL","FUNCTION","FUSION",
-      "GENERAL","GENERATED","GET","GLOBAL","GO","GOTO","GRANT","GRANTED","GREATEST","GROUP",
-      "GROUP_CONCAT","GROUPING","GROUPS","HAVING","HOLD","HOLDING","HOUR","IDENTITY","IF",
-      "ILIKE","IMMEDIATE","IMMUTABLE","IMPLICIT","IMPORT","IN","INCLUDE","INCLUDING","INDICATOR",
-      "INITIAL","INITIALIZED","INITIALLY","INNER","INNERMOST","INOUT","INPUT","INSENSITIVE",
-      "INSERT","INSERTING","INT","INTEGER","INTERSECT","INTERVAL","INTO","IS","ISNULL","ISOLATION",
-      "ITERATE","JAR","JAVA","JOIN","KEEP","KEY","KEYS","KILL","LABEL","LARGE","LAST","LATERAL",
-      "LEADING","LEAVE","LEFT","LEVEL","LIKE","LIMIT","LINENO","LINKTYPE","LOAD","LOCAL","LOCALTIME",
-      "LOCALTIMESTAMP","LOCATING","LOCATION","LOCK","LONG","LONGBLOB","LONGTEXT","LOOP","LOW_PRIORITY",
-      "LOWER","LN","LOG","LOG10","LPAD","LTRIM","MATCH","MATERIALIZED","MAXEXTENTS","MAXVALUE",
-      "MEDIUMBLOB","MEDIUMINT","MEDIUMTEXT","MERGE","MICROSECOND","MID","MIDDLEINT","MIN","MINUS",
-      "MINUTE","MINVALUE","MISSING","MOD","MODIFIES","MODIFY","MODULE","MONTH","MULTIPLY","NESTING",
-      "NATURAL","NCHAR","NCLOB","NESTED","NESTED_TABLE_ID","NEW","NEWDUAL","NEXT","NO","NOAUDIT",
-      "NOCHECK","NOCOMPRESS","NOCOPY","NODEID","NODEGROUP","NOHOLDLOCK","NONE","NOORDER","NOPR",
-      "NOQUIESCE","NORMALIZE","NOT","NOTHING","NOTIFICATION","NOTIN","NOTRIM","NOVALIDATE","NOWAIT",
-      "NULL","NULLIF","NULLS","NUMBER","NUMERIC","NUMGROUPS","OBJECT","OBJECTID","OBJECTS","OCTET_LENGTH",
-      "OF","OFF","OFFLINE","OLD","ON","ONCE","ONLINE","ONLY","OPEN","OPENDATASOURCE","OPENQUERY",
-      "OPENROWSET","OPENXML","OPERATOR","OPTION","OR","ORDER","ORDINALITY","ORG_ROLE","ORG_USER",
-      "ORGANIZATION","ORIGINAL","ORGINIZE","OTHERS","OUT","OUTER","OUTERMOST","OUTFILE","OUTPUT",
-      "OUTPUTFORMAT","OVER","OVERLAPS","PADE","PAD","PADDING","PAGE","PAGESIZE","PAGES","PANE",
-      "PARAMETER","PARAMETERS","PARTIAL","PARTITION","PARTITIONS","PASS","PASSING","PASSTHROUGH",
-      "PASSWORD","PATCH","PATH","PATIENCE","PATTERN","PATTERNVARS","PAW","PAUSE","PAVINGS","PAYLOAD",
-      "PAYLOADS","PAYPACK","PAYED","PAYING","PAYLOADING","PAYLOADS","PAYLOADSIZE","PAYLOADTYPE",
-      "PAYLOADVAR","PAYLOADVARSIZE","PAYOUT","PAYOUTS","PCI","PCOPY","PCRE","PD","PEACE","PEAKLOAD",
-      "PEAKLOADS","PEBBL","PECK","PECKED","PECKING","PECKS","PED","PEDAL","PEDALBOARD","PEDALED",
-      "PEDALING","PEDALS","PEDANT","PEDANTIC","PEDANTICAL","PEDANTICALLY","PEDANTICISM","PEDANTRIES",
-      "PEDANTRY","PEDANTS","PEDDACK","PEDDED","PEDDER","PEDDERY","PEDDING","PEDDLE","PEDDLED",
-      "PEDDLER","PEDDLERS","PEDDLES","PEDDLING","PEDDLINGS","PEDDY","PEDEE","PEDEES","PEDEGREE",
-      "PEDEKER","PEDEKER","PEDELEC","PEDELECS","PEDELFY","PEDELICK","PEDELOT","PEDELY","PEDELYSIS",
-      "PEDELYTE","PEDELYTES","PEDEMAY","PEDEMONY","PEDEMONTANE","PEDEMONTANES","PEDEMORT","PEDENCYCLE",
-      "PEDENCIES","PEDENCY","PEDENOMINALLY","PEDENOM","PEDER","PEDERS","PEDERT","PEDERTURE","PEDES",
-      "PEDESTALED","PEDESTALING","PEDESTALS","PEDESTAN","PEDESTANIC","PEDESTANICAL","PEDESTANCY",
-      "PEDESTANT","PEDESTANTE","PEDESTANTIC","PEDESTANTISM","PEDESTANTIST","PEDESTANTISTS","PEDESTANTITY",
-      "PEDESTANTS","PEDESTANTRY","PEDESTANY","PEDESTAS","PEDESTIANISM","PEDESTIANISMS","PEDESTIANIST",
-      "PEDESTIANISTS","PEDESTIANIZE","PEDESTIANIZED","PEDESTIANIZES","PEDESTIANIZING","PEDESTIANS",
-      "PEDESTICHE","PEDESTICHES","PEDESTICITY","PEDESTILED","PEDESTILE","PEDESTILED","PEDESTILES",
-      "PEDESTILING","PEDESTILS","PEDESTISM","PEDESTIS","PEDESTISN","PEDESTLYING","PEDESTORY","PEDESTRA",
-      "PEDESTRIAN","PEDESTRIANS","PEDESTRIANSHIP","PEDESTRIANSHIPS","PEDESTRIATE","PEDESTRIATED",
-      "PEDESTRIALES","PEDESTRIALING","PEDESTRIALS","PEDESTRIANISM","PEDESTRIANISMS","PEDESTRIANIST",
-      "PEDESTRIANISTS","PEDESTRIANITY","PEDESTRIANTLY","PEDESTRIANNESS","PEDESTRIANS","PEDESTRIANSHIP",
-      "PEDESTRIANS","PEDESTRIC","PEDESTRICAL","PEDESTRICALLY","PEDESTRICLY","PEDESTRIED","PEDESTRIES",
-      "PEDESTRINE","PEDESTRIAN","PEDESTRIANS","PEDESTRIEST","PEDESTRIETH","PEDESTRILIES","PEDESTRILITY",
-      "PEDESTRILS","PEDESTRILY","PEDESTRINESS","PEDESTRION","PEDESTRIONS","PEDESTRIS","PEDESTRISM",
-      "PEDESTRISM","PEDESTRISTICAL","PEDESTRISTICALLY","PEDESTRITICS","PEDESTRITIS","PEDESTRITIS","PEDESTRITUS",
-      "PEDESTRNOMIAL","PEDESTROID","PEDESTROIDAL","PEDESTROIDS","PEDESTRONOMY","PEDESTROP","PEDESTROPHE",
-      "PEDESTROPIES","PEDESTROPHY","PEDESTROSE","PEDESTROSES","PEDESTROSITY","PEDESTROUS","PEDESTROUSLY",
-      "PEDESTROUSNESS","PEDESTRY","PEDESTULAN","PEDESTULATE","PEDESTULE","PEDESTULED","PEDESTULES",
-      "PEDESTULOUS","PEDESTURE","PEDESTURED","PEDESTURES","PEDESTURING","PEDESTUY","PEDESTYAN","PEDESTYANISM",
-      "PEDESTYANISH","PEDESTYANISHLY","PEDESTYANISMS","PEDESTYANITY","PEDESTYANISM","PEDESTYANS","PEDESTYLE",
-      "PEDESTYLED","PEDESTYLES","PEDESTYLING","PEDESTYLINGS","PEDETHENE","PEDETINE","PEDETINES","PEDETOLOGICAL",
-      "PEDETOLOGIC","PEDETOLOGISTS","PEDETOLOGY","PEDEY","PEDEYO","PEDFED","PEDFEEDING","PEDFELS","PEDFELT",
-      "PEDFERIC","PEDFERIDGE","PEDFERING","PEDFEROUS","PEDFERROUS","PEDFIG","PEDFIGS","PEDFIGURE","PEDFIGURED",
-      "PEDFIGURES","PEDFIGURING","PEDFIGURISE","PEDFIGURISED","PEDFIGURISES","PEDFIGURISING","PEDFIGURIZE",
-      "PEDFIGURIZED","PEDFIGURIZES","PEDFIGURIZING","PEDFINCH","PEDFINGER","PEDFINGERING","PEDFINGERINGS",
-      "PEDFINGER","PEDFINGERS","PEDFINS","PEDFIN","PEDFINANCE","PEDFINAL","PEDFINANCE","PEDFINAL",
-      "PEDFINALIZED","PEDFINALIZE","PEDFINALLY","PEDFINALS","PEDFINANCE","PEDFINAL","PEDFINALT","PEDFINANCE",
-      "PEDFINAL","PEDFINAL","PEDFINAL","PEDFINANCE","PEDFINAL","PEDFINAL","PEDFINANCIA","PEDFINALCY",
-      "PEDFINALS","PEDFINALITY","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL",
-      "PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL","PEDFINAL"
+      "ALIAS",
+      "ALL",
+      "ALLOCATE",
+      "ALLOW",
+      "ALTER",
+      "AND",
+      "ANY",
+      "ARE",
+      "AS",
+      "ASIN",
+      "ASENSITIVE",
+      "ASSERTION",
+      "ASYMMETRIC",
+      "AT",
+      "ATOMIC",
+      "AUTHORIZATION",
+      "AVG",
+      "ATANH",
+      "ATAN2",
+      "ATAN",
+      "ASC",
+      "BETWEEN",
+      "BIGINT",
+      "BINARY",
+      "BLOB",
+      "BOOLEAN",
+      "BOTH",
+      "BY",
+      "CALL",
+      "CASE",
+      "CAST",
+      "CEILING",
+      "CHAR",
+      "CHAR_LENGTH",
+      "CHARACTER",
+      "CHARACTER_LENGTH",
+      "CHECK",
+      "CLOB",
+      "CLOSE",
+      "COALESCE",
+      "COLLATE",
+      "COLLATION",
+      "COLUMN",
+      "COMMENT",
+      "COMMIT",
+      "CONDITION",
+      "CONNECT",
+      "CONNECTION",
+      "CONSTRAINT",
+      "CONSTRAINTS",
+      "CONTAINS",
+      "CONTINUE",
+      "CONVERT",
+      "COPY",
+      "CORRESPONDING",
+      "COS",
+      "COSH",
+      "COUNT",
+      "CREATE",
+      "CROSS",
+      "CUBE",
+      "CUME_DIST",
+      "CURRENT",
+      "CURRENT_DATE",
+      "CURRENT_DEFAULT_TRANSFORM_GROUP",
+      "CURRENT_PATH",
+      "CURRENT_ROLE",
+      "CURRENT_SCHEMA",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURRENT_TRANSFORM_GROUP_FOR_TYPE",
+      "CURRENT_USER",
+      "CURSOR",
+      "CYCLE",
+      "DATA",
+      "DATABASE",
+      "DATE",
+      "DAY",
+      "DBINFO",
+      "DEALLOCATE",
+      "DEC",
+      "DECIMAL",
+      "DECLARE",
+      "DEFAULT",
+      "DEFERRABLE",
+      "DEFERRED",
+      "DEGREES",
+      "DELETE",
+      "DELETING",
+      "DELIMIT",
+      "DELIMITED",
+      "DELIMITER",
+      "DENSE_RANK",
+      "DEREF",
+      "DESC",
+      "DESCRIBE",
+      "DESCRIPTOR",
+      "DETERMINISTIC",
+      "DIAGNOSTICS",
+      "DISABLE",
+      "DISALLOW",
+      "DISCONNECT",
+      "DISTINCT",
+      "DISTRIBUTED",
+      "DIVIDE",
+      "DO",
+      "DOCUMENT",
+      "DOUBLE",
+      "DROP",
+      "DSSIZE",
+      "DYNAMIC",
+      "EACH",
+      "ELSE",
+      "ELSEIF",
+      "EMPTY",
+      "ENCODING",
+      "END",
+      "ENDEXEC",
+      "ENQUEUE",
+      "ESCAPE",
+      "ESCAPED",
+      "EVERY",
+      "EXCEPT",
+      "EXCEPTION",
+      "EXCLUDE",
+      "EXCLUDING",
+      "EXCLUSIVE",
+      "EXEC",
+      "EXECUTE",
+      "EXISTS",
+      "EXIT",
+      "EXP",
+      "EXPLAIN",
+      "EXTERNAL",
+      "EXTRACT",
+      "FALSE",
+      "FETCH",
+      "FILTER",
+      "FINAL",
+      "FIRST",
+      "FLOAT",
+      "FLOOR",
+      "FOR",
+      "FOREIGN",
+      "FORTRAN",
+      "FOUND",
+      "FREE",
+      "FREEING",
+      "FROM",
+      "FULL",
+      "FUNCTION",
+      "FUSION",
+      "GENERAL",
+      "GENERATED",
+      "GET",
+      "GLOBAL",
+      "GO",
+      "GOTO",
+      "GRANT",
+      "GRANTED",
+      "GREATEST",
+      "GROUP",
+      "GROUP_CONCAT",
+      "GROUPING",
+      "GROUPS",
+      "HAVING",
+      "HOLD",
+      "HOLDING",
+      "HOUR",
+      "IDENTITY",
+      "IF",
+      "ILIKE",
+      "IMMEDIATE",
+      "IMMUTABLE",
+      "IMPLICIT",
+      "IMPORT",
+      "IN",
+      "INCLUDE",
+      "INCLUDING",
+      "INDICATOR",
+      "INITIAL",
+      "INITIALIZED",
+      "INITIALLY",
+      "INNER",
+      "INNERMOST",
+      "INOUT",
+      "INPUT",
+      "INSENSITIVE",
+      "INSERT",
+      "INSERTING",
+      "INT",
+      "INTEGER",
+      "INTERSECT",
+      "INTERVAL",
+      "INTO",
+      "IS",
+      "ISNULL",
+      "ISOLATION",
+      "ITERATE",
+      "JAR",
+      "JAVA",
+      "JOIN",
+      "KEEP",
+      "KEY",
+      "KEYS",
+      "KILL",
+      "LABEL",
+      "LARGE",
+      "LAST",
+      "LATERAL",
+      "LEADING",
+      "LEAVE",
+      "LEFT",
+      "LEVEL",
+      "LIKE",
+      "LIMIT",
+      "LINENO",
+      "LINKTYPE",
+      "LOAD",
+      "LOCAL",
+      "LOCALTIME",
+      "LOCALTIMESTAMP",
+      "LOCATING",
+      "LOCATION",
+      "LOCK",
+      "LONG",
+      "LONGBLOB",
+      "LONGTEXT",
+      "LOOP",
+      "LOW_PRIORITY",
+      "LOWER",
+      "LN",
+      "LOG",
+      "LOG10",
+      "LPAD",
+      "LTRIM",
+      "MATCH",
+      "MATERIALIZED",
+      "MAXEXTENTS",
+      "MAXVALUE",
+      "MEDIUMBLOB",
+      "MEDIUMINT",
+      "MEDIUMTEXT",
+      "MERGE",
+      "MICROSECOND",
+      "MID",
+      "MIDDLEINT",
+      "MIN",
+      "MINUS",
+      "MINUTE",
+      "MINVALUE",
+      "MISSING",
+      "MOD",
+      "MODIFIES",
+      "MODIFY",
+      "MODULE",
+      "MONTH",
+      "MULTIPLY",
+      "NESTING",
+      "NATURAL",
+      "NCHAR",
+      "NCLOB",
+      "NESTED",
+      "NESTED_TABLE_ID",
+      "NEW",
+      "NEWDUAL",
+      "NEXT",
+      "NO",
+      "NOAUDIT",
+      "NOCHECK",
+      "NOCOMPRESS",
+      "NOCOPY",
+      "NODEID",
+      "NODEGROUP",
+      "NOHOLDLOCK",
+      "NONE",
+      "NOORDER",
+      "NOPR",
+      "NOQUIESCE",
+      "NORMALIZE",
+      "NOT",
+      "NOTHING",
+      "NOTIFICATION",
+      "NOTIN",
+      "NOTRIM",
+      "NOVALIDATE",
+      "NOWAIT",
+      "NULL",
+      "NULLIF",
+      "NULLS",
+      "NUMBER",
+      "NUMERIC",
+      "NUMGROUPS",
+      "OBJECT",
+      "OBJECTID",
+      "OBJECTS",
+      "OCTET_LENGTH",
+      "OF",
+      "OFF",
+      "OFFLINE",
+      "OLD",
+      "ON",
+      "ONCE",
+      "ONLINE",
+      "ONLY",
+      "OPEN",
+      "OPENDATASOURCE",
+      "OPENQUERY",
+      "OPENROWSET",
+      "OPENXML",
+      "OPERATOR",
+      "OPTION",
+      "OR",
+      "ORDER",
+      "ORDINALITY",
+      "ORG_ROLE",
+      "ORG_USER",
+      "ORGANIZATION",
+      "ORIGINAL",
+      "ORGINIZE",
+      "OTHERS",
+      "OUT",
+      "OUTER",
+      "OUTERMOST",
+      "OUTFILE",
+      "OUTPUT",
+      "OUTPUTFORMAT",
+      "OVER",
+      "OVERLAPS",
+      "PADE",
+      "PAD",
+      "PADDING",
+      "PAGE",
+      "PAGESIZE",
+      "PAGES",
+      "PANE",
+      "PARAMETER",
+      "PARAMETERS",
+      "PARTIAL",
+      "PARTITION",
+      "PARTITIONS",
+      "PASS",
+      "PASSING",
+      "PASSTHROUGH",
+      "PASSWORD",
+      "PATCH",
+      "PATH",
+      "PATIENCE",
+      "PATTERN",
+      "PATTERNVARS",
+      "PAW",
+      "PAUSE",
+      "PAVINGS",
+      "PAYLOAD",
+      "PAYLOADS",
+      "PAYPACK",
+      "PAYED",
+      "PAYING",
+      "PAYLOADING",
+      "PAYLOADS",
+      "PAYLOADSIZE",
+      "PAYLOADTYPE",
+      "PAYLOADVAR",
+      "PAYLOADVARSIZE",
+      "PAYOUT",
+      "PAYOUTS",
+      "PCI",
+      "PCOPY",
+      "PCRE",
+      "PD",
+      "PEACE",
+      "PEAKLOAD",
+      "PEAKLOADS",
+      "PEBBL",
+      "PECK",
+      "PECKED",
+      "PECKING",
+      "PECKS",
+      "PED",
+      "PEDAL",
+      "PEDALBOARD",
+      "PEDALED",
+      "PEDALING",
+      "PEDALS",
+      "PEDANT",
+      "PEDANTIC",
+      "PEDANTICAL",
+      "PEDANTICALLY",
+      "PEDANTICISM",
+      "PEDANTRIES",
+      "PEDANTRY",
+      "PEDANTS",
+      "PEDDACK",
+      "PEDDED",
+      "PEDDER",
+      "PEDDERY",
+      "PEDDING",
+      "PEDDLE",
+      "PEDDLED",
+      "PEDDLER",
+      "PEDDLERS",
+      "PEDDLES",
+      "PEDDLING",
+      "PEDDLINGS",
+      "PEDDY",
+      "PEDEE",
+      "PEDEES",
+      "PEDEGREE",
+      "PEDEKER",
+      "PEDEKER",
+      "PEDELEC",
+      "PEDELECS",
+      "PEDELFY",
+      "PEDELICK",
+      "PEDELOT",
+      "PEDELY",
+      "PEDELYSIS",
+      "PEDELYTE",
+      "PEDELYTES",
+      "PEDEMAY",
+      "PEDEMONY",
+      "PEDEMONTANE",
+      "PEDEMONTANES",
+      "PEDEMORT",
+      "PEDENCYCLE",
+      "PEDENCIES",
+      "PEDENCY",
+      "PEDENOMINALLY",
+      "PEDENOM",
+      "PEDER",
+      "PEDERS",
+      "PEDERT",
+      "PEDERTURE",
+      "PEDES",
+      "PEDESTALED",
+      "PEDESTALING",
+      "PEDESTALS",
+      "PEDESTAN",
+      "PEDESTANIC",
+      "PEDESTANICAL",
+      "PEDESTANCY",
+      "PEDESTANT",
+      "PEDESTANTE",
+      "PEDESTANTIC",
+      "PEDESTANTISM",
+      "PEDESTANTIST",
+      "PEDESTANTISTS",
+      "PEDESTANTITY",
+      "PEDESTANTS",
+      "PEDESTANTRY",
+      "PEDESTANY",
+      "PEDESTAS",
+      "PEDESTIANISM",
+      "PEDESTIANISMS",
+      "PEDESTIANIST",
+      "PEDESTIANISTS",
+      "PEDESTIANIZE",
+      "PEDESTIANIZED",
+      "PEDESTIANIZES",
+      "PEDESTIANIZING",
+      "PEDESTIANS",
+      "PEDESTICHE",
+      "PEDESTICHES",
+      "PEDESTICITY",
+      "PEDESTILED",
+      "PEDESTILE",
+      "PEDESTILED",
+      "PEDESTILES",
+      "PEDESTILING",
+      "PEDESTILS",
+      "PEDESTISM",
+      "PEDESTIS",
+      "PEDESTISN",
+      "PEDESTLYING",
+      "PEDESTORY",
+      "PEDESTRA",
+      "PEDESTRIAN",
+      "PEDESTRIANS",
+      "PEDESTRIANSHIP",
+      "PEDESTRIANSHIPS",
+      "PEDESTRIATE",
+      "PEDESTRIATED",
+      "PEDESTRIALES",
+      "PEDESTRIALING",
+      "PEDESTRIALS",
+      "PEDESTRIANISM",
+      "PEDESTRIANISMS",
+      "PEDESTRIANIST",
+      "PEDESTRIANISTS",
+      "PEDESTRIANITY",
+      "PEDESTRIANTLY",
+      "PEDESTRIANNESS",
+      "PEDESTRIANS",
+      "PEDESTRIANSHIP",
+      "PEDESTRIANS",
+      "PEDESTRIC",
+      "PEDESTRICAL",
+      "PEDESTRICALLY",
+      "PEDESTRICLY",
+      "PEDESTRIED",
+      "PEDESTRIES",
+      "PEDESTRINE",
+      "PEDESTRIAN",
+      "PEDESTRIANS",
+      "PEDESTRIEST",
+      "PEDESTRIETH",
+      "PEDESTRILIES",
+      "PEDESTRILITY",
+      "PEDESTRILS",
+      "PEDESTRILY",
+      "PEDESTRINESS",
+      "PEDESTRION",
+      "PEDESTRIONS",
+      "PEDESTRIS",
+      "PEDESTRISM",
+      "PEDESTRISM",
+      "PEDESTRISTICAL",
+      "PEDESTRISTICALLY",
+      "PEDESTRITICS",
+      "PEDESTRITIS",
+      "PEDESTRITIS",
+      "PEDESTRITUS",
+      "PEDESTRNOMIAL",
+      "PEDESTROID",
+      "PEDESTROIDAL",
+      "PEDESTROIDS",
+      "PEDESTRONOMY",
+      "PEDESTROP",
+      "PEDESTROPHE",
+      "PEDESTROPIES",
+      "PEDESTROPHY",
+      "PEDESTROSE",
+      "PEDESTROSES",
+      "PEDESTROSITY",
+      "PEDESTROUS",
+      "PEDESTROUSLY",
+      "PEDESTROUSNESS",
+      "PEDESTRY",
+      "PEDESTULAN",
+      "PEDESTULATE",
+      "PEDESTULE",
+      "PEDESTULED",
+      "PEDESTULES",
+      "PEDESTULOUS",
+      "PEDESTURE",
+      "PEDESTURED",
+      "PEDESTURES",
+      "PEDESTURING",
+      "PEDESTUY",
+      "PEDESTYAN",
+      "PEDESTYANISM",
+      "PEDESTYANISH",
+      "PEDESTYANISHLY",
+      "PEDESTYANISMS",
+      "PEDESTYANITY",
+      "PEDESTYANISM",
+      "PEDESTYANS",
+      "PEDESTYLE",
+      "PEDESTYLED",
+      "PEDESTYLES",
+      "PEDESTYLING",
+      "PEDESTYLINGS",
+      "PEDETHENE",
+      "PEDETINE",
+      "PEDETINES",
+      "PEDETOLOGICAL",
+      "PEDETOLOGIC",
+      "PEDETOLOGISTS",
+      "PEDETOLOGY",
+      "PEDEY",
+      "PEDEYO",
+      "PEDFED",
+      "PEDFEEDING",
+      "PEDFELS",
+      "PEDFELT",
+      "PEDFERIC",
+      "PEDFERIDGE",
+      "PEDFERING",
+      "PEDFEROUS",
+      "PEDFERROUS",
+      "PEDFIG",
+      "PEDFIGS",
+      "PEDFIGURE",
+      "PEDFIGURED",
+      "PEDFIGURES",
+      "PEDFIGURING",
+      "PEDFIGURISE",
+      "PEDFIGURISED",
+      "PEDFIGURISES",
+      "PEDFIGURISING",
+      "PEDFIGURIZE",
+      "PEDFIGURIZED",
+      "PEDFIGURIZES",
+      "PEDFIGURIZING",
+      "PEDFINCH",
+      "PEDFINGER",
+      "PEDFINGERING",
+      "PEDFINGERINGS",
+      "PEDFINGER",
+      "PEDFINGERS",
+      "PEDFINS",
+      "PEDFIN",
+      "PEDFINANCE",
+      "PEDFINAL",
+      "PEDFINANCE",
+      "PEDFINAL",
+      "PEDFINALIZED",
+      "PEDFINALIZE",
+      "PEDFINALLY",
+      "PEDFINALS",
+      "PEDFINANCE",
+      "PEDFINAL",
+      "PEDFINALT",
+      "PEDFINANCE",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINANCE",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINANCIA",
+      "PEDFINALCY",
+      "PEDFINALS",
+      "PEDFINALITY",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL",
+      "PEDFINAL"
     ],
     "hana": [
-      "ABORT","ABSOLUTE","ACTION","ADD","AFTER","ALIAS","ALL","ALLOCATE","ALTER",
-      "AND","ANOTHER","ARRAY","AS","ASC","ASSERTION","AT","AUTHORIZATION",
-      "BACK","BACKUP","BEFORE","BEGIN","BETWEEN","BIGINT","BINARY","BLOB","BOOLEAN",
-      "BOTH","BREADTH","BREAK","BROWSE","BULK","BULK_INSERT","BY","CALL","CASE",
-      "CAST","CATALOG","CEIL","CEILING","CENTER","CHAIN","CHAR","CHARACTER","CHARACTER_LENGTH",
-      "CHARINDEX","CHARITERRANGE","CHARSET","CHARSTAT","CHARTYPE","CHECK","CHECKPOINT","CHOICE",
-      "CLOSE","CLUSTERED","COALESCE","COLLATE","COLLATION","COLUMN","COMMENT","COMMENTS",
-      "COMMIT","COMMITTED","COMPACT","COMPARE","COMPRESS","COMPRESSRANGE","COMPUTE","CONCAT",
-      "CONDITION","CONDITIONAL","CONFIGURATION","CONNECTOR","CONNECTORS","CONNECTED","CONNECTING",
-      "CONNECTION","CONNECTIONS","CONNECTIVE","CONNICTIVE","CONNIK","CONNIKE","CONNIKER","CONNIKERY",
-      "CONNING","CONNIPTION","CONNIPTIONS","CONNIPTION","CONNISSANCE","CONNISGENCE","CONNISSEUR",
-      "CONNISSEURS","CONNING","CONNIPITION","CONNITIONAL","CONNITIONALLY","CONNITIONALLY","CONNITIONAL",
-      "CONNITIONAL","CONNITIONAL","CONNITIONAL","CONNITIONAL","CONNITIONAL","CONNITIONAL",
-      "CONNITIONAL","CONNITIONAL","CONNITIONAL"
+      "ABORT",
+      "ABSOLUTE",
+      "ACTION",
+      "ADD",
+      "AFTER",
+      "ALIAS",
+      "ALL",
+      "ALLOCATE",
+      "ALTER",
+      "AND",
+      "ANOTHER",
+      "ARRAY",
+      "AS",
+      "ASC",
+      "ASSERTION",
+      "AT",
+      "AUTHORIZATION",
+      "BACK",
+      "BACKUP",
+      "BEFORE",
+      "BEGIN",
+      "BETWEEN",
+      "BIGINT",
+      "BINARY",
+      "BLOB",
+      "BOOLEAN",
+      "BOTH",
+      "BREADTH",
+      "BREAK",
+      "BROWSE",
+      "BULK",
+      "BULK_INSERT",
+      "BY",
+      "CALL",
+      "CASE",
+      "CAST",
+      "CATALOG",
+      "CEIL",
+      "CEILING",
+      "CENTER",
+      "CHAIN",
+      "CHAR",
+      "CHARACTER",
+      "CHARACTER_LENGTH",
+      "CHARINDEX",
+      "CHARITERRANGE",
+      "CHARSET",
+      "CHARSTAT",
+      "CHARTYPE",
+      "CHECK",
+      "CHECKPOINT",
+      "CHOICE",
+      "CLOSE",
+      "CLUSTERED",
+      "COALESCE",
+      "COLLATE",
+      "COLLATION",
+      "COLUMN",
+      "COMMENT",
+      "COMMENTS",
+      "COMMIT",
+      "COMMITTED",
+      "COMPACT",
+      "COMPARE",
+      "COMPRESS",
+      "COMPRESSRANGE",
+      "COMPUTE",
+      "CONCAT",
+      "CONDITION",
+      "CONDITIONAL",
+      "CONFIGURATION",
+      "CONNECTOR",
+      "CONNECTORS",
+      "CONNECTED",
+      "CONNECTING",
+      "CONNECTION",
+      "CONNECTIONS",
+      "CONNECTIVE",
+      "CONNICTIVE",
+      "CONNIK",
+      "CONNIKE",
+      "CONNIKER",
+      "CONNIKERY",
+      "CONNING",
+      "CONNIPTION",
+      "CONNIPTIONS",
+      "CONNIPTION",
+      "CONNISSANCE",
+      "CONNISGENCE",
+      "CONNISSEUR",
+      "CONNISSEURS",
+      "CONNING",
+      "CONNIPITION",
+      "CONNITIONAL",
+      "CONNITIONALLY",
+      "CONNITIONALLY",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL",
+      "CONNITIONAL"
     ]
   },
-
   "constraint_notes": {
     "check": "CHECK constraint syntax accepted but enforcement varies by database. Verify data integrity enforcement in application/ETL layer.",
     "foreign_key": "FOREIGN KEY syntax accepted by most databases but enforcement varies. Application-level referential integrity may be required.",

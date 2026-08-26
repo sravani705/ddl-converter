@@ -197,7 +197,7 @@ def _convert_column(
     for key in type_keys_sorted:
         if s_upper.startswith(key):
             # found a matching base type; extract optional args and remainder
-            m = re.match(r"(?i)" + re.escape(key) + r"(?:\s*\(([^)]+)\))?(.*)", s)
+            m = re.match(r"(?i)" + re.escape(key) + r"\b(?:\s*\(([^)]+)\))?(.*)", s)
             if m:
                 base_type = key
                 type_args = m.group(1)
@@ -221,13 +221,13 @@ def _convert_column(
             base_type = "BOOLEAN"
             type_args = None
 
-    # Look up type mapping
+    # Look up type mapping (supports source->target pair override or generic target)
     type_mapping = RULES.get("type_mappings", {}).get(base_type, {})
     if not type_mapping:
         result.add_review(f"No type mapping found for '{base_type}'; left unchanged")
         converted_type = base_type
     else:
-        target_info = type_mapping.get(target_dialect, {})
+        target_info = type_mapping.get(f"{source_dialect}->{target_dialect}") or type_mapping.get(target_dialect, {})
         if target_info.get("target") is None:
             result.add_review(f"Type '{base_type}' has no equivalent in {target_dialect}; left unchanged. Reason: {target_info.get('review', 'Unknown')}")
             converted_type = base_type
@@ -340,12 +340,12 @@ def _convert_default_expressions(
         target_func = func_defs.get(target_dialect)
         
         if source_func and target_func and isinstance(source_func, dict) and isinstance(target_func, dict):
-            pattern = func_name + r"\s*\("
+            pattern = r"\b" + re.escape(func_name) + r"(?:\s*\(\s*\))?"
             if re.search(pattern, rest, re.IGNORECASE):
                 replacement_text = target_func.get("replacement", "")
                 if replacement_text:
                     rest = re.sub(pattern, replacement_text, rest, flags=re.IGNORECASE)
-                    result.add_transform(f"Converted function '{func_name}()' to '{replacement_text}'")
+                    result.add_transform(f"Converted function '{func_name}' to '{replacement_text}'")
                 if target_func.get("review"):
                     result.add_review(target_func["review"])
 
