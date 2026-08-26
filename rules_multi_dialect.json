@@ -12,7 +12,7 @@
 
     "INT": {
       "tsql": {"target": "INT"},
-      "mysql": {"target": "INT"},
+      "mysql": {"target": "INTEGER"},
       "oracle": {"target": "NUMBER(10,0)"},
       "postgresql": {"target": "INTEGER"},
       "db2": {"target": "INTEGER"},
@@ -52,11 +52,11 @@
 
     "TINYINT": {
       "tsql": {"target": "TINYINT", "review": "SQL Server TINYINT is unsigned 0-255; other databases have no exact equivalent. Choose appropriate target type and add range CHECK if needed."},
-      "mysql": {"target": "TINYINT"},
+      "mysql": {"target": "INTEGER"},
       "oracle": {"target": "NUMBER(3,0)", "review": "Oracle has no TINYINT; mapped to NUMBER(3,0)."},
       "postgresql": {"target": "SMALLINT", "review": "PostgreSQL has no TINYINT; mapped to SMALLINT."},
       "db2": {"target": "SMALLINT", "review": "DB2 has no TINYINT; mapped to SMALLINT."},
-      "hana": {"target": "TINYINT"},
+      "hana": {"target": "NUMBER(3,0)", "review": "HANA TINYINT mapped to NUMBER(3,0) per rules."},
       "snowflake": {"target": "SMALLINT", "review": "Snowflake has no unsigned types; mapped to SMALLINT."}
     },
 
@@ -91,13 +91,13 @@
     },
 
     "CHAR": {
-      "tsql": {"target": "CHAR", "carry_args": true},
-      "mysql": {"target": "CHAR", "carry_args": true},
-      "oracle": {"target": "CHAR", "carry_args": true},
-      "postgresql": {"target": "CHAR", "carry_args": true},
-      "db2": {"target": "CHAR", "carry_args": true},
-      "hana": {"target": "CHAR", "carry_args": true},
-      "snowflake": {"target": "CHAR", "carry_args": true}
+      "tsql": {"target": "REAL", "review": "REAL is 32-bit; precision may differ across databases."},
+      "mysql": {"target": "FLOAT"},
+      "oracle": {"target": "FLOAT"},
+      "postgresql": {"target": "FLOAT"},
+      "db2": {"target": "REAL"},
+      "hana": {"target": "REAL"},
+      "snowflake": {"target": "FLOAT", "review": "Snowflake FLOAT is 64-bit double; different precision than SQL Server REAL."}
     },
 
     "NCHAR": {
@@ -112,7 +112,7 @@
 
     "TEXT": {
       "tsql": {"target": "VARCHAR", "fixed_args": "MAX", "review": "TEXT is deprecated; mapped to max VARCHAR."},
-      "mysql": {"target": "TEXT"},
+      "mysql": {"target": "VARCHAR", "review": "MySQL TEXT mapped to Snowflake VARCHAR"},
       "oracle": {"target": "CLOB", "review": "Oracle CLOBs have different semantics than TEXT."},
       "postgresql": {"target": "TEXT"},
       "db2": {"target": "CLOB", "review": "DB2 CLOBs require different handling."},
@@ -120,14 +120,44 @@
       "snowflake": {"target": "VARCHAR", "fixed_args": "16777216"}
     },
 
+    "LONGTEXT": {
+      "tsql": {"target": "VARCHAR", "fixed_args": "MAX"},
+      "mysql": {"target": "VARCHAR", "review": "LONGTEXT mapped to VARCHAR (may require large size)."},
+      "oracle": {"target": "CLOB"},
+      "postgresql": {"target": "TEXT"},
+      "db2": {"target": "CLOB"},
+      "hana": {"target": "NCLOB"},
+      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216"}
+    },
+
+    "JSON": {
+      "tsql": {"target": "VARIANT", "review": "SQL Server uses JSON as text; map to VARIANT for semi-structured data."},
+      "mysql": {"target": "VARIANT"},
+      "oracle": {"target": "JSON", "review": "Oracle JSON storage differs."},
+      "postgresql": {"target": "JSONB"},
+      "db2": {"target": "CLOB", "review": "DB2 JSON handling varies."},
+      "hana": {"target": "VARIANT"},
+      "snowflake": {"target": "VARIANT"}
+    },
+
+    "BLOB": {
+      "tsql": {"target": "VARBINARY", "carry_args": true},
+      "mysql": {"target": "BINARY", "carry_args": true},
+      "oracle": {"target": "BLOB"},
+      "postgresql": {"target": "BYTEA"},
+      "db2": {"target": "BLOB"},
+      "hana": {"target": "BLOB"},
+      "snowflake": {"target": "BINARY", "carry_args": true}
+    },
+
     "DATETIME": {
       "tsql": {"target": "DATETIME"},
-      "mysql": {"target": "DATETIME"},
+      "mysql": {"target": "TIMESTAMP_NTZ"},
       "oracle": {"target": "DATE", "review": "Oracle DATE includes time; behavior differs from SQL Server DATETIME."},
       "postgresql": {"target": "TIMESTAMP"},
       "db2": {"target": "TIMESTAMP"},
       "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP"}
+      "snowflake": {"target": "TIMESTAMP_NTZ"}
     },
 
     "DATETIME2": {
@@ -143,7 +173,7 @@
     "DATE": {
       "tsql": {"target": "DATE"},
       "mysql": {"target": "DATE"},
-      "oracle": {"target": "DATE", "review": "Oracle DATE includes time; only date part will be used."},
+      "oracle": {"target": "TIMESTAMP_NTZ", "review": "Oracle DATE includes time; map to TIMESTAMP_NTZ in Snowflake to preserve time component."},
       "postgresql": {"target": "DATE"},
       "db2": {"target": "DATE"},
       "hana": {"target": "DATE"},
@@ -212,22 +242,111 @@
 
     "TIMESTAMP": {
       "tsql": {"target": "TIMESTAMP"},
-      "mysql": {"target": "TIMESTAMP"},
+      "mysql": {"target": "TIMESTAMP_NTZ"},
       "oracle": {"target": "TIMESTAMP", "review": "Oracle TIMESTAMP behavior differs from DATE; confirm precision."},
       "postgresql": {"target": "TIMESTAMP"},
       "db2": {"target": "TIMESTAMP"},
       "hana": {"target": "TIMESTAMP"},
-      "snowflake": {"target": "TIMESTAMP"}
+      "snowflake": {"target": "TIMESTAMP_NTZ"}
+    },
+
+    "TIMESTAMP WITH TIME ZONE": {
+      "tsql": {"target": null, "review": "T-SQL does not use this form."},
+      "mysql": {"target": null},
+      "oracle": {"target": "TIMESTAMP WITH TIME ZONE"},
+      "postgresql": {"target": "TIMESTAMP WITH TIME ZONE"},
+      "db2": {"target": "TIMESTAMP WITH TIME ZONE"},
+      "hana": {"target": "TIMESTAMP WITH TIME ZONE"},
+      "snowflake": {"target": "TIMESTAMP_TZ", "review": "Preserve timezone information in Snowflake TIMESTAMP_TZ."}
+    },
+
+    "TIMESTAMP WITHOUT TIME ZONE": {
+      "tsql": {"target": null},
+      "mysql": {"target": "TIMESTAMP_NTZ"},
+      "oracle": {"target": "TIMESTAMP"},
+      "postgresql": {"target": "TIMESTAMP"},
+      "db2": {"target": "TIMESTAMP"},
+      "hana": {"target": "TIMESTAMP"},
+      "snowflake": {"target": "TIMESTAMP_NTZ"}
+    },
+
+    "DOUBLE PRECISION": {
+      "tsql": {"target": "FLOAT"},
+      "mysql": {"target": "DOUBLE"},
+      "oracle": {"target": "DOUBLE"},
+      "postgresql": {"target": "DOUBLE PRECISION"},
+      "db2": {"target": "DOUBLE"},
+      "hana": {"target": "DOUBLE"},
+      "snowflake": {"target": "DOUBLE"}
     },
 
     "SERIAL": {
       "tsql": {"target": "INTEGER", "review": "T-SQL has no SERIAL; map to INTEGER and add identity handling separately."},
       "mysql": {"target": "INTEGER", "review": "MySQL AUTO_INCREMENT is preferred; SERIAL maps to INTEGER with AUTO_INCREMENT behavior."},
       "oracle": {"target": "NUMBER(10,0)", "review": "Oracle uses sequences; SERIAL mapped to NUMBER."},
-      "postgresql": {"target": "SERIAL", "review": "Postgres SERIAL should be converted to a sequence or IDENTITY/AUTOINCREMENT on target."},
+      "postgresql": {"target": "INTEGER", "review": "Postgres SERIAL should be converted to AUTOINCREMENT or sequence; map to INTEGER for target and add identity handling."},
       "db2": {"target": "INTEGER"},
       "hana": {"target": "INTEGER"},
       "snowflake": {"target": "INTEGER", "review": "SERIAL is sequence-backed; convert to AUTOINCREMENT or recreate sequence+default in Snowflake."}
+    },
+
+    "SMALLSERIAL": {
+      "tsql": {"target": "SMALLINT"},
+      "mysql": {"target": "SMALLINT"},
+      "oracle": {"target": "NUMBER(5,0)"},
+      "postgresql": {"target": "SMALLINT", "review": "SMALLSERIAL should be converted to SMALLINT + autoincrement semantics."},
+      "db2": {"target": "SMALLINT"},
+      "hana": {"target": "SMALLINT"},
+      "snowflake": {"target": "SMALLINT", "review": "Convert to AUTOINCREMENT on Snowflake if needed."}
+    },
+
+    "BIGSERIAL": {
+      "tsql": {"target": "BIGINT"},
+      "mysql": {"target": "BIGINT"},
+      "oracle": {"target": "NUMBER(19,0)"},
+      "postgresql": {"target": "BIGINT", "review": "BIGSERIAL should be converted to BIGINT + autoincrement semantics."},
+      "db2": {"target": "BIGINT"},
+      "hana": {"target": "BIGINT"},
+      "snowflake": {"target": "BIGINT", "review": "Convert to AUTOINCREMENT on Snowflake if needed."}
+    },
+    "UUID": {
+      "tsql": {"target": "VARCHAR", "fixed_args": "36"},
+      "mysql": {"target": "CHAR", "fixed_args": "36"},
+      "oracle": {"target": "RAW", "fixed_args": "16"},
+      "postgresql": {"target": "UUID"},
+      "db2": {"target": "CHAR", "fixed_args": "36"},
+      "hana": {"target": "NVARCHAR", "fixed_args": "36"},
+      "snowflake": {"target": "VARCHAR", "fixed_args": "36"}
+    },
+
+    "JSONB": {
+      "tsql": {"target": "VARIANT"},
+      "mysql": {"target": "VARIANT"},
+      "oracle": {"target": "JSON"},
+      "postgresql": {"target": "JSONB"},
+      "db2": {"target": "CLOB"},
+      "hana": {"target": "VARIANT"},
+      "snowflake": {"target": "VARIANT"}
+    },
+
+    "BYTEA": {
+      "tsql": {"target": "VARBINARY", "carry_args": true},
+      "mysql": {"target": "BINARY", "carry_args": true},
+      "oracle": {"target": "BLOB"},
+      "postgresql": {"target": "BYTEA"},
+      "db2": {"target": "BLOB"},
+      "hana": {"target": "BINARY"},
+      "snowflake": {"target": "BINARY", "carry_args": true}
+    },
+
+    "ARRAY": {
+      "tsql": {"target": null, "review": "SQL Server has no native ARRAY type."},
+      "mysql": {"target": null, "review": "MySQL does not use ARRAY as a column type."},
+      "oracle": {"target": null, "review": "Oracle nested tables / varrays require manual mapping."},
+      "postgresql": {"target": "ARRAY", "review": "Array semantics differ; review element type mapping."},
+      "db2": {"target": null, "review": "DB2 array support differs; manual review."},
+      "hana": {"target": null, "review": "HANA array-like types require manual handling."},
+      "snowflake": {"target": "ARRAY", "review": "Snowflake supports ARRAY; verify element types."}
     },
 
     "FLOAT": {
@@ -258,6 +377,46 @@
       "db2": {"target": "DECIMAL", "fixed_args": "19,4"},
       "hana": {"target": "DECIMAL", "fixed_args": "19,4"},
       "snowflake": {"target": "NUMBER", "fixed_args": "19,4"}
+    },
+
+    "DECFLOAT": {
+      "tsql": {"target": null, "review": "DECFLOAT specific to DB2; manual review needed."},
+      "mysql": {"target": null},
+      "oracle": {"target": null},
+      "postgresql": {"target": null},
+      "db2": {"target": "NUMBER", "review": "DB2 DECFLOAT requires review; map to NUMBER or FLOAT depending on precision requirements."},
+      "hana": {"target": null},
+      "snowflake": {"target": "NUMBER", "review": "Map DECFLOAT to NUMBER by default; verify precision/behavior."}
+    },
+
+    "DBCLOB": {
+      "tsql": {"target": "VARCHAR", "fixed_args": "16777216"},
+      "mysql": {"target": "VARCHAR"},
+      "oracle": {"target": "CLOB"},
+      "postgresql": {"target": "TEXT"},
+      "db2": {"target": "DBCLOB"},
+      "hana": {"target": "NCLOB"},
+      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216", "review": "DB CLOBs mapped to large VARCHAR in Snowflake; confirm size."}
+    },
+
+    "LONG VARCHAR": {
+      "tsql": {"target": "VARCHAR", "fixed_args": "MAX"},
+      "mysql": {"target": "VARCHAR"},
+      "oracle": {"target": "CLOB"},
+      "postgresql": {"target": "TEXT"},
+      "db2": {"target": "LONG VARCHAR"},
+      "hana": {"target": "NCLOB"},
+      "snowflake": {"target": "VARCHAR", "fixed_args": "16777216", "review": "Map long text to large VARCHAR."}
+    },
+
+    "ROWID": {
+      "tsql": {"target": "VARCHAR", "review": "ROWID-like columns should be reviewed."},
+      "mysql": {"target": "VARCHAR"},
+      "oracle": {"target": "ROWID"},
+      "postgresql": {"target": "VARCHAR"},
+      "db2": {"target": "VARCHAR", "review": "DB2 ROWID mapping to VARCHAR; review usage."},
+      "hana": {"target": "VARCHAR"},
+      "snowflake": {"target": "VARCHAR", "review": "ROWID mapped to VARCHAR; verify uniqueness/format."}
     },
 
     "SMALLMONEY": {
@@ -314,10 +473,10 @@
       "tsql": {"target": "XML", "review": "XML must be handled differently in target database."},
       "mysql": {"target": "LONGTEXT", "review": "MySQL stores XML as text; no native XML type."},
       "oracle": {"target": "XMLTYPE", "review": "Oracle XMLType has different semantics."},
-      "postgresql": {"target": "XML", "review": "PostgreSQL has native XML support."},
+      "postgresql": {"target": "VARCHAR", "review": "PostgreSQL XML -> VARCHAR mapping; manual review required."},
       "db2": {"target": "XML", "review": "DB2 has native XML support."},
       "hana": {"target": "NCLOB", "review": "HANA stores XML as NCLOB."},
-      "snowflake": {"target": "VARIANT", "review": "Snowflake uses VARIANT for semi-structured data."}
+      "snowflake": {"target": "VARIANT", "review": "Snowflake uses VARIANT for semi-structured data; XML may be stored as text or VARIANT after conversion."}
     },
 
     "SQL_VARIANT": {

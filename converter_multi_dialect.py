@@ -183,14 +183,43 @@ def _convert_column(
     col_name = match.group(1)
     type_and_rest = match.group(2)
 
-    # Extract data type
-    type_match = re.match(r"(\w+)(?:\s*\(([^)]+)\))?(.*)", type_and_rest, re.IGNORECASE)
-    if not type_match:
-        return col_def
+    # Extract data type — support multi-word base types (e.g. "DOUBLE PRECISION", "TIMESTAMP WITH TIME ZONE")
+    s = type_and_rest.strip()
+    base_type = None
+    type_args = None
+    rest = ""
 
-    base_type = type_match.group(1).upper()
-    type_args = type_match.group(2)
-    rest = type_match.group(3)
+    # Try to match the longest type name present in RULES.type_mappings
+    type_keys = list(RULES.get("type_mappings", {}).keys())
+    # sort by length (characters) to match multi-word keys first
+    type_keys_sorted = sorted(type_keys, key=lambda k: len(k), reverse=True)
+    s_upper = s.upper()
+    for key in type_keys_sorted:
+        if s_upper.startswith(key):
+            # found a matching base type; extract optional args and remainder
+            m = re.match(r"(?i)" + re.escape(key) + r"(?:\s*\(([^)]+)\))?(.*)", s)
+            if m:
+                base_type = key
+                type_args = m.group(1)
+                rest = m.group(2) or ""
+                break
+
+    # Fallback: single-word type extraction
+    if not base_type:
+        type_match = re.match(r"(\w+)(?:\s*\(([^)]+)\))?(.*)", s, re.IGNORECASE)
+        if not type_match:
+            return col_def
+        base_type = type_match.group(1).upper()
+        type_args = type_match.group(2)
+        rest = type_match.group(3)
+
+    # Special-case: MySQL uses TINYINT(1) as boolean in many schemas
+    if source_dialect == "mysql" and base_type == "TINYINT" and type_args:
+        # normalize args like '1' or '1 unsigned' -> treat as boolean when width==1
+        arg_norm = re.sub(r"\s+", "", type_args)
+        if arg_norm.split(',')[0] == '1':
+            base_type = "BOOLEAN"
+            type_args = None
 
     # Look up type mapping
     type_mapping = RULES.get("type_mappings", {}).get(base_type, {})
