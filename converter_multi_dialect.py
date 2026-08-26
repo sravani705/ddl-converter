@@ -102,6 +102,83 @@ def convert(
     return result
 
 
+def _find_matching_paren(text: str, open_idx: int) -> int:
+    """Find index of the matching ')' respecting nested parens and string literals."""
+    assert text[open_idx] == "("
+    depth = 0
+    i = open_idx
+    n = len(text)
+    in_str = None
+    while i < n:
+        c = text[i]
+        if in_str:
+            if c == in_str:
+                if in_str == "'" and i + 1 < n and text[i + 1] == "'":
+                    i += 2
+                    continue
+                in_str = None
+        elif c in ("'", '"', '`'):
+            in_str = c
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    raise ValueError(f"Unbalanced parentheses starting at index {open_idx}")
+
+
+def _handle_trailing_table_options(
+    trailing: str,
+    source_dialect: str,
+    target_dialect: str,
+    result: ConversionResult
+) -> None:
+    """Detect and remove dialect-specific table options, logging transformations."""
+    trailing_clean = trailing.strip()
+    if not trailing_clean:
+        return
+
+    # Strip trailing semicolon / GO
+    if trailing_clean.endswith(";"):
+        trailing_clean = trailing_clean[:-1].strip()
+
+    if source_dialect == "mysql":
+        patterns = [
+            (r"\bENGINE\s*=\s*\w+", "ENGINE"),
+            (r"\b(?:DEFAULT\s+)?(?:CHARACTER\s+SET|CHARSET)\s*=\s*[\w\-]+", "CHARSET"),
+            (r"\bCOLLATE\s*=\s*[\w\-]+", "COLLATE"),
+            (r"\bAUTO_INCREMENT\s*=\s*\d+", "AUTO_INCREMENT"),
+            (r"\bROW_FORMAT\s*=\s*\w+", "ROW_FORMAT"),
+            (r"\bCOMMENT\s*=\s*('[^']*'|\"[^\"]*\")", "COMMENT")
+        ]
+        for pat, name in patterns:
+            for m in re.finditer(pat, trailing_clean, re.IGNORECASE):
+                result.add_transform(f"Removed MySQL-specific clause: {m.group(0)}")
+
+    elif source_dialect == "oracle":
+        patterns = [
+            (r"\bTABLESPACE\s+\w+", "TABLESPACE"),
+            (r"\bSTORAGE\s*\([^)]*\)", "STORAGE"),
+            (r"\bPCTFREE\s+\d+", "PCTFREE"),
+            (r"\bPCTUSED\s+\d+", "PCTUSED"),
+            (r"\bINITRANS\s+\d+", "INITRANS")
+        ]
+        for pat, name in patterns:
+            for m in re.finditer(pat, trailing_clean, re.IGNORECASE):
+                result.add_transform(f"Removed Oracle-specific clause: {m.group(0)}")
+
+    elif source_dialect == "hana":
+        patterns = [
+            (r"\bUNLOAD\s+PRIORITY\s+\d+", "UNLOAD PRIORITY"),
+            (r"\bAUTO\s+MERGE\b", "AUTO MERGE")
+        ]
+        for pat, name in patterns:
+            for m in re.finditer(pat, trailing_clean, re.IGNORECASE):
+                result.add_transform(f"Removed SAP HANA-specific clause: {m.group(0)}")
+
+
 def _convert_create_table(
     sql_text: str,
     source_dialect: str,
@@ -110,22 +187,42 @@ def _convert_create_table(
 ) -> str:
     """Convert CREATE TABLE statements from source to target dialect."""
     
-    # Find all CREATE TABLE ... (...); statements
-    pattern = r"CREATE\s+TABLE\s+(\w+(?:\.\w+)?)\s*\((.*?)\)\s*(?:;|GO|$)"
-    matches = re.finditer(pattern, sql_text, re.IGNORECASE | re.DOTALL)
+    # Locate all CREATE TABLE ... ( headers
+    header_pattern = r"CREATE\s+TABLE\s+([^\(]+?)\s*\("
+    matches = list(re.finditer(header_pattern, sql_text, re.IGNORECASE))
+    if not matches:
+        return sql_text
 
     converted_statements = []
-    for match in matches:
-        table_name = match.group(1)
-        columns_text = match.group(2)
+    for idx, match in enumerate(matches):
+        raw_table_name = match.group(1).strip()
+        open_paren_idx = match.end() - 1
+        try:
+            close_paren_idx = _find_matching_paren(sql_text, open_paren_idx)
+        except ValueError:
+            continue
+
+        columns_text = sql_text[open_paren_idx + 1:close_paren_idx]
+
+        # Determine trailing portion until next CREATE TABLE or EOF
+        next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(sql_text)
+        trailing = sql_text[close_paren_idx + 1:next_start]
 
         # Strip schema prefix if needed
+        table_name = raw_table_name.strip("`[]\"")
         schema_strip_list = RULES.get("schema_handling", {}).get(source_dialect, {}).get("strip_schemas", [])
-        if "." in table_name:
-            schema, tbl = table_name.rsplit(".", 1)
+        if "." in raw_table_name:
+            parts = raw_table_name.split(".", 1)
+            schema = parts[0].strip("`[]\"")
+            tbl = parts[1].strip("`[]\"")
             if schema.upper() in [s.upper() for s in schema_strip_list]:
                 table_name = tbl
                 result.add_transform(f"Dropped schema prefix '{schema}.' from table '{tbl}'")
+            else:
+                table_name = f"{schema}.{tbl}"
+
+        # Handle dialect-specific trailing table options
+        _handle_trailing_table_options(trailing, source_dialect, target_dialect, result)
 
         # Parse columns and constraints
         columns_parts = _split_columns(columns_text)
@@ -159,7 +256,6 @@ def _convert_create_table(
 
         converted_statements.append(converted_stmt)
 
-    # If no CREATE TABLE found, return original
     if not converted_statements:
         return sql_text
 
@@ -310,7 +406,10 @@ def _convert_identity_syntax(
             
             template = target_rules.get("template", "")
             if template and "{seed}" in template:
-                replacement = template.format(seed=seed, increment=increment)
+                if match.groups() and match.group(1):
+                    replacement = template.format(seed=seed, increment=increment)
+                else:
+                    replacement = target_rules.get("template_default", "AUTOINCREMENT")
             elif template:
                 replacement = template
             else:

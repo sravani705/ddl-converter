@@ -2170,6 +2170,52 @@
       "snowflake": {
         "replacement": "CURRENT_USER()"
       }
+    },
+    "CURRENT_TIMESTAMP": {
+      "tsql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "mysql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "oracle": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_TIMESTAMP()"
+      }
+    },
+    "NOW": {
+      "tsql": {
+        "replacement": "GETDATE()"
+      },
+      "mysql": {
+        "replacement": "NOW()"
+      },
+      "oracle": {
+        "replacement": "SYSDATE"
+      },
+      "postgresql": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "db2": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "hana": {
+        "replacement": "CURRENT_TIMESTAMP"
+      },
+      "snowflake": {
+        "replacement": "CURRENT_TIMESTAMP()"
+      }
     }
   },
   "identity_syntax": {
