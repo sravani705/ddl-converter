@@ -1,0 +1,390 @@
+{
+  "TC01": {
+    "snowflake_ddl": "CREATE TABLE Country (\n    CountryCode CHAR(2) NOT NULL,\n    CountryName VARCHAR(100) NOT NULL\n);",
+    "transformations": [
+      "Table Country: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default)."
+    ],
+    "manual_review": []
+  },
+  "TC02": {
+    "snowflake_ddl": "CREATE TABLE Customer (\n    CustomerID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    CustomerName VARCHAR(100) NOT NULL,\n    Email VARCHAR(255),\n    DateOfBirth TIMESTAMP,\n    IsActive BOOLEAN DEFAULT TRUE,\n    CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),\n    CONSTRAINT PK_Customer PRIMARY KEY (CustomerID)\n);",
+    "transformations": [
+      "Table Customer: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Customer.CustomerID: INT -> INTEGER",
+      "Table Customer.CustomerID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Customer.DateOfBirth: DATETIME -> TIMESTAMP",
+      "Table Customer.IsActive: BIT -> BOOLEAN",
+      "Table Customer.IsActive: DEFAULT 1 -> TRUE (BIT -> BOOLEAN literal)",
+      "Table Customer.CreatedDate: DATETIME2 -> TIMESTAMP",
+      "Table Customer.CreatedDate: DEFAULT GETDATE() -> CURRENT_TIMESTAMP()"
+    ],
+    "manual_review": [
+      "Table Customer: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC03": {
+    "snowflake_ddl": "CREATE TABLE Product (\n    ProductID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    SKU CHAR(10) NOT NULL,\n    ProductName VARCHAR(200) NOT NULL,\n    Description VARCHAR,\n    UnitPrice NUMBER(10,2) NOT NULL,\n    Weight FLOAT,\n    IsDiscontinued BOOLEAN DEFAULT FALSE,\n    ReleaseDate DATE,\n    CONSTRAINT PK_Product PRIMARY KEY (ProductID)\n);",
+    "transformations": [
+      "Table Product: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Product.ProductID: INT -> INTEGER",
+      "Table Product.ProductID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Product.ProductName: NVARCHAR(200) -> VARCHAR(200)",
+      "Table Product.Description: NVARCHAR(MAX) -> VARCHAR (Snowflake VARCHAR/BINARY have no explicit max-length variant; omitting the size defaults to the max size).",
+      "Table Product.UnitPrice: DECIMAL(10,2) -> NUMBER(10,2)",
+      "Table Product.IsDiscontinued: BIT -> BOOLEAN",
+      "Table Product.IsDiscontinued: DEFAULT 0 -> FALSE (BIT -> BOOLEAN literal)"
+    ],
+    "manual_review": [
+      "Table Product: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC04": {
+    "snowflake_ddl": "CREATE TABLE \"Order\" (\n    OrderID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    CustomerID INTEGER NOT NULL,\n    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),\n    CONSTRAINT PK_Order PRIMARY KEY (OrderID),\n    CONSTRAINT FK_Order_Customer FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)\n);",
+    "transformations": [
+      "Table Order: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Order.OrderID: INT -> INTEGER",
+      "Table Order.OrderID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Order.CustomerID: INT -> INTEGER",
+      "Table Order.OrderDate: DATETIME2 -> TIMESTAMP",
+      "Table Order.OrderDate: DEFAULT GETDATE() -> CURRENT_TIMESTAMP()"
+    ],
+    "manual_review": [
+      "Table Order: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC05": {
+    "snowflake_ddl": "CREATE TABLE OrderLine (\n    OrderLineID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    OrderID INTEGER NOT NULL,\n    ProductID INTEGER NOT NULL,\n    Quantity INTEGER DEFAULT 1 NOT NULL,\n    CONSTRAINT PK_OrderLine PRIMARY KEY (OrderLineID),\n    CONSTRAINT FK_OrderLine_Order FOREIGN KEY (OrderID) REFERENCES \"Order\"(OrderID),\n    CONSTRAINT FK_OrderLine_Product FOREIGN KEY (ProductID) REFERENCES Product(ProductID)\n);",
+    "transformations": [
+      "Table OrderLine: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table OrderLine.OrderLineID: INT -> INTEGER",
+      "Table OrderLine.OrderLineID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table OrderLine.OrderID: INT -> INTEGER",
+      "Table OrderLine.ProductID: INT -> INTEGER",
+      "Table OrderLine.Quantity: INT -> INTEGER"
+    ],
+    "manual_review": [
+      "Table OrderLine, constraint FK_OrderLine_Order: ON DELETE/ON UPDATE referential action removed from FOREIGN KEY - Snowflake does not support cascading referential actions. Re-implement the cascade/null/default behavior in ETL or application logic.",
+      "Table OrderLine, constraint FK_OrderLine_Product: ON DELETE/ON UPDATE referential action removed from FOREIGN KEY - Snowflake does not support cascading referential actions. Re-implement the cascade/null/default behavior in ETL or application logic.",
+      "Table OrderLine: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC06": {
+    "snowflake_ddl": "CREATE TABLE StudentCourse (\n    StudentID INTEGER NOT NULL,\n    CourseID INTEGER NOT NULL,\n    EnrolledDate DATE DEFAULT CURRENT_TIMESTAMP(),\n    CONSTRAINT PK_StudentCourse PRIMARY KEY (StudentID, CourseID)\n);",
+    "transformations": [
+      "Table StudentCourse: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table StudentCourse.StudentID: INT -> INTEGER",
+      "Table StudentCourse.CourseID: INT -> INTEGER",
+      "Table StudentCourse.EnrolledDate: DEFAULT GETDATE() -> CURRENT_TIMESTAMP()"
+    ],
+    "manual_review": [
+      "Table StudentCourse: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC07": {
+    "snowflake_ddl": "CREATE TABLE Settings (\n    SettingID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    IsEnabled BOOLEAN DEFAULT TRUE,\n    RetryCount INTEGER DEFAULT 0,\n    Environment VARCHAR(20) DEFAULT 'production',\n    LastRun TIMESTAMP DEFAULT CURRENT_TIMESTAMP()\n);",
+    "transformations": [
+      "Table Settings: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Settings.SettingID: INT -> INTEGER",
+      "Table Settings.SettingID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Settings.IsEnabled: BIT -> BOOLEAN",
+      "Table Settings.IsEnabled: DEFAULT ((1)) -> TRUE (BIT -> BOOLEAN literal)",
+      "Table Settings.RetryCount: INT -> INTEGER",
+      "Table Settings.LastRun: DATETIME2 -> TIMESTAMP",
+      "Table Settings.LastRun: DEFAULT (GETDATE()) -> (CURRENT_TIMESTAMP())"
+    ],
+    "manual_review": []
+  },
+  "TC08": {
+    "snowflake_ddl": "CREATE TABLE Address (\n    AddressID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Line1 VARCHAR(200) NOT NULL,\n    Line2 VARCHAR(200) NULL,\n    City VARCHAR(100) NOT NULL,\n    PostalCode VARCHAR(20)\n);",
+    "transformations": [
+      "Table Address: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Address.AddressID: INT -> INTEGER",
+      "Table Address.AddressID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": []
+  },
+  "TC09": {
+    "snowflake_ddl": "CREATE TABLE Employee (\n    EmployeeID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Email VARCHAR(255) NOT NULL,\n    Salary NUMBER(12,2) NOT NULL,\n    CONSTRAINT PK_Employee PRIMARY KEY (EmployeeID),\n    CONSTRAINT UQ_Employee_Email UNIQUE (Email),\n    CONSTRAINT CK_Employee_Salary CHECK (Salary > 0)\n);",
+    "transformations": [
+      "Table Employee: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Employee.EmployeeID: INT -> INTEGER",
+      "Table Employee.EmployeeID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Employee.Salary: DECIMAL(12,2) -> NUMBER(12,2)"
+    ],
+    "manual_review": [
+      "Table Employee: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed.",
+      "Table Employee: Snowflake accepts CHECK constraint syntax but does NOT enforce it (metadata only, per Snowflake documentation). If the CHECK is relied on for data integrity, enforce it in the load/ETL layer instead."
+    ]
+  },
+  "TC10": {
+    "snowflake_ddl": "CREATE TABLE sales.Invoice (\n    InvoiceID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    InvoiceNumber VARCHAR(30) NOT NULL,\n    Total NUMBER(12,2) NOT NULL\n);",
+    "transformations": [
+      "Table Invoice.InvoiceID: INT -> INTEGER",
+      "Table Invoice.InvoiceID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Invoice.Total: DECIMAL(12,2) -> NUMBER(12,2)"
+    ],
+    "manual_review": []
+  },
+  "TC11": {
+    "snowflake_ddl": "CREATE TABLE \"Order\" (\n    \"Order\" INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    \"Group\" VARCHAR(50),\n    \"Table\" VARCHAR(50),\n    \"Select\" VARCHAR(50)\n);",
+    "transformations": [
+      "Table Order: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Order.Order: INT -> INTEGER",
+      "Table Order.Order: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": []
+  },
+  "TC12": {
+    "snowflake_ddl": "CREATE TABLE Document (\n    DocumentID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Title VARCHAR(400),\n    Body VARCHAR,\n    RawText VARCHAR(MAX)\n);",
+    "transformations": [
+      "Table Document: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Document.DocumentID: INT -> INTEGER",
+      "Table Document.DocumentID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Document.Title: NVARCHAR(400) -> VARCHAR(400)",
+      "Table Document.Body: NVARCHAR(MAX) -> VARCHAR (Snowflake VARCHAR/BINARY have no explicit max-length variant; omitting the size defaults to the max size)."
+    ],
+    "manual_review": []
+  },
+  "TC13": {
+    "snowflake_ddl": "CREATE TABLE FinancialLedger (\n    LedgerID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Amount NUMBER(18,4) NOT NULL,\n    TaxRate NUMBER(5,4) NOT NULL,\n    Balance NUMBER(38,0) NOT NULL\n);",
+    "transformations": [
+      "Table FinancialLedger: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table FinancialLedger.LedgerID: INT -> INTEGER",
+      "Table FinancialLedger.LedgerID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table FinancialLedger.Amount: DECIMAL(18,4) -> NUMBER(18,4)",
+      "Table FinancialLedger.TaxRate: NUMERIC(5,4) -> NUMBER(5,4)",
+      "Table FinancialLedger.Balance: DECIMAL(38,0) -> NUMBER(38,0)"
+    ],
+    "manual_review": []
+  },
+  "TC14": {
+    "snowflake_ddl": "CREATE TABLE EventLog (\n    EventID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    EventDate DATE,\n    EventTime TIME,\n    EventDateTime TIMESTAMP,\n    EventDateTime2 TIMESTAMP,\n    EventSmallDateTime TIMESTAMP,\n    EventOffset TIMESTAMP_TZ\n);",
+    "transformations": [
+      "Table EventLog: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table EventLog.EventID: INT -> INTEGER",
+      "Table EventLog.EventID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table EventLog.EventDateTime: DATETIME -> TIMESTAMP",
+      "Table EventLog.EventDateTime2: DATETIME2 -> TIMESTAMP",
+      "Table EventLog.EventSmallDateTime: SMALLDATETIME -> TIMESTAMP",
+      "Table EventLog.EventOffset: DATETIMEOFFSET -> TIMESTAMP_TZ"
+    ],
+    "manual_review": [
+      "Table EventLog.EventOffset: DATETIMEOFFSET stores an explicit UTC offset per row. Snowflake TIMESTAMP_TZ stores an offset too but display/session-timezone behavior differs - verify downstream consumers."
+    ]
+  },
+  "TC15": {
+    "snowflake_ddl": "CREATE TABLE SessionToken (\n    TokenID VARCHAR(36) DEFAULT UUID_STRING() NOT NULL,\n    UserID INTEGER NOT NULL,\n    IssuedAt TIMESTAMP DEFAULT CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())\n);",
+    "transformations": [
+      "Table SessionToken: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table SessionToken.TokenID: UNIQUEIDENTIFIER -> VARCHAR(36)",
+      "Table SessionToken.TokenID: DEFAULT NEWID() -> UUID_STRING()",
+      "Table SessionToken.UserID: INT -> INTEGER",
+      "Table SessionToken.IssuedAt: DATETIME2 -> TIMESTAMP",
+      "Table SessionToken.IssuedAt: DEFAULT GETUTCDATE() -> CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())"
+    ],
+    "manual_review": [
+      "Table SessionToken.TokenID: No native UUID/GUID type in Snowflake. Mapped to VARCHAR(36) to hold the string form of the GUID. If uniqueness/generation logic (NEWID()) is relied on, re-implement using UUID_STRING().",
+      "Table SessionToken.TokenID: NEWID() and UUID_STRING() use different UUID generation algorithms (SQL Server: proprietary GUID; Snowflake: UUIDv4). Values will not match/collide across systems and any code relying on GUID structure/sortability (e.g. NEWSEQUENTIALID patterns) must be re-reviewed.",
+      "Table SessionToken.IssuedAt: GETUTCDATE() returns UTC based on the OS clock regardless of session settings. The Snowflake replacement CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP()) depends on the session TIMEZONE parameter - verify the account/session timezone is set as expected, or use SYSDATE() if the account default is already UTC."
+    ]
+  },
+  "TC16": {
+    "snowflake_ddl": "CREATE TABLE InventoryItem (\n    ItemID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Quantity INTEGER NOT NULL,\n    RowVersionCol ROWVERSION\n);",
+    "transformations": [
+      "Table InventoryItem: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table InventoryItem.ItemID: INT -> INTEGER",
+      "Table InventoryItem.ItemID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table InventoryItem.Quantity: INT -> INTEGER"
+    ],
+    "manual_review": [
+      "Table InventoryItem.RowVersionCol: ROWVERSION/TIMESTAMP (SQL Server auto-updating row-version column) has no Snowflake equivalent. Consider a trigger-less pattern such as a METADATA$ pseudo-column, a manually maintained UPDATED_AT TIMESTAMP, or STREAMS for change tracking."
+    ]
+  },
+  "TC17": {
+    "snowflake_ddl": "CREATE TABLE OrderTotal (\n    OrderTotalID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Quantity INTEGER NOT NULL,\n    UnitPrice NUMBER(10,2) NOT NULL,\n    -- MANUAL REVIEW REQUIRED: computed column not converted: LineTotal AS (Quantity * UnitPrice)\n);",
+    "transformations": [
+      "Table OrderTotal: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table OrderTotal.OrderTotalID: INT -> INTEGER",
+      "Table OrderTotal.OrderTotalID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table OrderTotal.Quantity: INT -> INTEGER",
+      "Table OrderTotal.UnitPrice: DECIMAL(10,2) -> NUMBER(10,2)"
+    ],
+    "manual_review": [
+      "Table OrderTotal.LineTotal: computed column ('LineTotal AS (Quantity * UnitPrice)') skipped. Snowflake supports computed/virtual columns with different syntax (<name> <type> AS (<expr>)) and a data type must be supplied explicitly - port the expression manually."
+    ]
+  },
+  "TC18": {
+    "snowflake_ddl": "CREATE TABLE Configuration (\n    ConfigID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Payload VARIANT\n);",
+    "transformations": [
+      "Table Configuration: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Configuration.ConfigID: INT -> INTEGER",
+      "Table Configuration.ConfigID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Configuration.Payload: XML -> VARIANT"
+    ],
+    "manual_review": [
+      "Table Configuration.Payload: Snowflake has no native XML type. Mapped to VARIANT; XML must be parsed/loaded as text or converted to JSON/semi-structured data at load time."
+    ]
+  },
+  "TC19": {
+    "snowflake_ddl": "CREATE TABLE BigTable (\n    RowID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Payload BINARY(MAX)\n);",
+    "transformations": [
+      "Table BigTable: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table BigTable.RowID: INT -> INTEGER",
+      "Table BigTable.RowID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table BigTable.Payload: VARBINARY(MAX) -> BINARY(MAX)"
+    ],
+    "manual_review": [
+      "Table BigTable: Filegroup placement (ON [PRIMARY]) is a SQL Server physical-storage concept. Snowflake manages physical storage automatically; the clause is removed with no functional replacement.",
+      "Table BigTable: TEXTIMAGE_ON filegroup placement is a SQL Server physical-storage concept with no Snowflake equivalent; removed."
+    ]
+  },
+  "TC20": {
+    "snowflake_ddl": "CREATE TABLE Region (\n    RegionID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    RegionName VARCHAR(100) NOT NULL,\n    CONSTRAINT PK_Region PRIMARY KEY (RegionID)\n);",
+    "transformations": [
+      "Table Region: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Region.RegionID: INT -> INTEGER",
+      "Table Region.RegionID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": [
+      "Table Region: CLUSTERED/NONCLUSTERED index hint removed - Snowflake has no user-defined clustered/nonclustered indexes (automatic micro-partitioning is used instead; consider a CLUSTER BY clause if explicit clustering is needed).",
+      "Table Region: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC21": {
+    "snowflake_ddl": "CREATE TABLE Ticket (\n    TicketID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Subject VARCHAR(200) NOT NULL\n);",
+    "transformations": [
+      "Table Ticket: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Ticket.TicketID: INT -> INTEGER",
+      "Table Ticket.TicketID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": [
+      "Table Ticket: inline INDEX definition removed ('INDEX IX_Ticket_Subject NONCLUSTERED (Subject)'). Snowflake does not support user-defined secondary indexes / inline INDEX clauses in CREATE TABLE. Consider a CLUSTER BY clause or the search optimization service."
+    ]
+  },
+  "TC22": {
+    "snowflake_ddl": "CREATE TABLE Coupon (\n    CouponID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    DiscountPct NUMBER(5,2),\n    CONSTRAINT CK_Coupon_Discount CHECK (COALESCE(DiscountPct, 0) >= 0)\n);",
+    "transformations": [
+      "Table Coupon: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Coupon.CouponID: INT -> INTEGER",
+      "Table Coupon.CouponID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Coupon.DiscountPct: DECIMAL(5,2) -> NUMBER(5,2)"
+    ],
+    "manual_review": [
+      "Table Coupon: Snowflake accepts CHECK constraint syntax but does NOT enforce it (metadata only, per Snowflake documentation). If the CHECK is relied on for data integrity, enforce it in the load/ETL layer instead."
+    ]
+  },
+  "TC23": {
+    "snowflake_ddl": "CREATE TABLE Payroll (\n    PayrollID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    GrossPay NUMBER(19,4) NOT NULL,\n    Bonus NUMBER(10,4)\n);",
+    "transformations": [
+      "Table Payroll: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Payroll.PayrollID: INT -> INTEGER",
+      "Table Payroll.PayrollID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Payroll.GrossPay: MONEY -> NUMBER(19,4)",
+      "Table Payroll.Bonus: SMALLMONEY -> NUMBER(10,4)"
+    ],
+    "manual_review": [
+      "Table Payroll.GrossPay: MONEY has no exact Snowflake equivalent; mapped to NUMBER(19,4) which matches SQL Server MONEY precision/scale. Confirm rounding behavior at the application layer.",
+      "Table Payroll.Bonus: SMALLMONEY has no exact Snowflake equivalent; mapped to NUMBER(10,4) which matches SQL Server SMALLMONEY precision/scale."
+    ]
+  },
+  "TC24": {
+    "snowflake_ddl": "CREATE TABLE Attachment (\n    AttachmentID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Checksum BINARY(16),\n    FileBytes BINARY(MAX),\n    LegacyThumbnail BINARY(8388608)\n);",
+    "transformations": [
+      "Table Attachment: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Attachment.AttachmentID: INT -> INTEGER",
+      "Table Attachment.AttachmentID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Attachment.FileBytes: VARBINARY(MAX) -> BINARY(MAX)",
+      "Table Attachment.LegacyThumbnail: IMAGE -> BINARY(8388608)"
+    ],
+    "manual_review": [
+      "Table Attachment.LegacyThumbnail: IMAGE is deprecated in SQL Server. Mapped to BINARY(8388608) (Snowflake's max BINARY size); confirm actual data size requirements."
+    ]
+  },
+  "TC25": {
+    "snowflake_ddl": "CREATE TABLE Rating (\n    RatingID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    Stars SMALLINT NOT NULL\n);",
+    "transformations": [
+      "Table Rating: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Rating.RatingID: INT -> INTEGER",
+      "Table Rating.RatingID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Rating.Stars: TINYINT -> SMALLINT"
+    ],
+    "manual_review": [
+      "Table Rating.Stars: SQL Server TINYINT is unsigned 0-255; Snowflake has no unsigned types. Mapped to SMALLINT - add a CHECK(col BETWEEN 0 AND 255) manually if the 0-255 range must be enforced."
+    ]
+  },
+  "TC26": {
+    "snowflake_ddl": "CREATE TABLE Department (\n    DepartmentID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    DepartmentName VARCHAR(100) NOT NULL,\n    CONSTRAINT PK_Department PRIMARY KEY (DepartmentID)\n);\n\nCREATE TABLE Team (\n    TeamID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    DepartmentID INTEGER NOT NULL,\n    TeamName VARCHAR(100) NOT NULL,\n    CONSTRAINT PK_Team PRIMARY KEY (TeamID),\n    CONSTRAINT FK_Team_Department FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID)\n);",
+    "transformations": [
+      "Table Department: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Department.DepartmentID: INT -> INTEGER",
+      "Table Department.DepartmentID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Team: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Team.TeamID: INT -> INTEGER",
+      "Table Team.TeamID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Team.DepartmentID: INT -> INTEGER"
+    ],
+    "manual_review": [
+      "Table Department: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed.",
+      "Table Team: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  },
+  "TC27": {
+    "snowflake_ddl": "CREATE TABLE Patient (\n    PatientID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    SSN CHAR(11) NULL,\n    LastName VARCHAR(100) NOT NULL\n);",
+    "transformations": [
+      "Table Patient: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Patient.PatientID: INT -> INTEGER",
+      "Table Patient.PatientID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": [
+      "Table Patient.SSN: Dynamic Data Masking (MASKED WITH...) is a SQL Server security feature. Snowflake's equivalent is a Dynamic Data Masking policy created separately via CREATE MASKING POLICY, not inline column DDL - recreate manually.",
+      "Table Patient.LastName: COLLATE specifies a SQL Server collation. Snowflake collation syntax and available collations differ; review whether case-sensitivity/accent-sensitivity behavior needs to be replicated with Snowflake's COLLATE clause."
+    ]
+  },
+  "TC28": {
+    "snowflake_ddl": "CREATE TABLE StoreLocation (\n    StoreLocationID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    GeoPoint GEOGRAPHY,\n    OrgPath HIERARCHYID\n);",
+    "transformations": [
+      "Table StoreLocation: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table StoreLocation.StoreLocationID: INT -> INTEGER",
+      "Table StoreLocation.StoreLocationID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1"
+    ],
+    "manual_review": [
+      "Table StoreLocation.GeoPoint: Snowflake GEOGRAPHY uses WGS84/GeoJSON semantics which differ from SQL Server's GEOGRAPHY type (SRID handling, methods available). Validate spatial functions used downstream.",
+      "Table StoreLocation.OrgPath: HIERARCHYID has no Snowflake equivalent. Typically re-modeled as a path VARCHAR or an adjacency-list pattern. Manual redesign required."
+    ]
+  },
+  "TC29": {
+    "snowflake_ddl": "CREATE TABLE AuditEntry (\n    AuditEntryID VARCHAR(36) DEFAULT UUID_STRING() NOT NULL,\n    OldValue VARIANT,\n    NewValue VARIANT\n);",
+    "transformations": [
+      "Table AuditEntry: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table AuditEntry.AuditEntryID: UNIQUEIDENTIFIER -> VARCHAR(36)",
+      "Table AuditEntry.AuditEntryID: DEFAULT NEWID() -> UUID_STRING()",
+      "Table AuditEntry.OldValue: SQL_VARIANT -> VARIANT",
+      "Table AuditEntry.NewValue: SQL_VARIANT -> VARIANT"
+    ],
+    "manual_review": [
+      "Table AuditEntry.AuditEntryID: No native UUID/GUID type in Snowflake. Mapped to VARCHAR(36) to hold the string form of the GUID. If uniqueness/generation logic (NEWID()) is relied on, re-implement using UUID_STRING().",
+      "Table AuditEntry.AuditEntryID: NEWID() and UUID_STRING() use different UUID generation algorithms (SQL Server: proprietary GUID; Snowflake: UUIDv4). Values will not match/collide across systems and any code relying on GUID structure/sortability (e.g. NEWSEQUENTIALID patterns) must be re-reviewed.",
+      "Table AuditEntry.AuditEntryID: ROWGUIDCOL marks a column as the row's GUID for replication features Snowflake doesn't have. Removed; re-implement replication/merge logic explicitly if needed.",
+      "Table AuditEntry.OldValue: SQL_VARIANT (mixed runtime type) has no direct Snowflake equivalent. Mapped to VARIANT; validate that all historical values convert cleanly.",
+      "Table AuditEntry.NewValue: SQL_VARIANT (mixed runtime type) has no direct Snowflake equivalent. Mapped to VARIANT; validate that all historical values convert cleanly."
+    ]
+  },
+  "TC30": {
+    "snowflake_ddl": "CREATE TABLE Subscription (\n    SubscriptionID INTEGER AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,\n    PlanName VARCHAR(50) DEFAULT 'free' NOT NULL,\n    AutoRenew BOOLEAN DEFAULT FALSE NOT NULL,\n    TrialUsed BOOLEAN DEFAULT TRUE,\n    MaxSeats SMALLINT DEFAULT 5,\n    StartedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,\n    ExpiresAt TIMESTAMP NULL,\n    CONSTRAINT PK_Subscription PRIMARY KEY (SubscriptionID)\n);",
+    "transformations": [
+      "Table Subscription: dropped default schema prefix 'dbo.' (SQL Server's default schema has no meaningful Snowflake equivalent by default).",
+      "Table Subscription.SubscriptionID: INT -> INTEGER",
+      "Table Subscription.SubscriptionID: IDENTITY(1,1) -> AUTOINCREMENT START 1 INCREMENT 1",
+      "Table Subscription.AutoRenew: BIT -> BOOLEAN",
+      "Table Subscription.AutoRenew: DEFAULT 0 -> FALSE (BIT -> BOOLEAN literal)",
+      "Table Subscription.TrialUsed: BIT -> BOOLEAN",
+      "Table Subscription.TrialUsed: DEFAULT 1 -> TRUE (BIT -> BOOLEAN literal)",
+      "Table Subscription.StartedAt: DATETIME2 -> TIMESTAMP",
+      "Table Subscription.StartedAt: DEFAULT GETDATE() -> CURRENT_TIMESTAMP()",
+      "Table Subscription.ExpiresAt: DATETIME2 -> TIMESTAMP"
+    ],
+    "manual_review": [
+      "Table Subscription: Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed."
+    ]
+  }
+}

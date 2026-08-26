@@ -1,0 +1,3 @@
+streamlit>=1.0
+sqlglot>=16.0
+requests>=2.28

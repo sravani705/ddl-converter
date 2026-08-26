@@ -1,0 +1,138 @@
+{
+  "_comment": "Structured SQL Server -> Snowflake DDL conversion rules. This file is the source of truth for all mappings. The engine (converter.py) must consult this file rather than relying on model/LLM knowledge for any mapping decision.",
+
+  "type_mappings": {
+    "_comment": "key = SQL Server base type (uppercase, no brackets/args). value.target = Snowflake type name. value.carry_args = whether (n) / (p,s) args are copied through unchanged. value.fixed_args = literal args to force (overrides carry_args). value.review = if present, always flag manual review with this reason even though a mapping exists.",
+
+    "INT":              { "target": "INTEGER" },
+    "INTEGER":          { "target": "INTEGER" },
+    "BIGINT":           { "target": "BIGINT" },
+    "SMALLINT":         { "target": "SMALLINT" },
+    "TINYINT":          { "target": "SMALLINT", "review": "SQL Server TINYINT is unsigned 0-255; Snowflake has no unsigned types. Mapped to SMALLINT - add a CHECK(col BETWEEN 0 AND 255) manually if the 0-255 range must be enforced." },
+    "BIT":              { "target": "BOOLEAN" },
+
+    "VARCHAR":          { "target": "VARCHAR", "carry_args": true },
+    "NVARCHAR":         { "target": "VARCHAR", "carry_args": true, "max_alias": "MAX" },
+    "CHAR":             { "target": "CHAR", "carry_args": true },
+    "NCHAR":            { "target": "CHAR", "carry_args": true },
+    "TEXT":             { "target": "VARCHAR", "fixed_args": "16777216", "review": "TEXT is deprecated in SQL Server. Mapped to Snowflake's max VARCHAR size (16MB); confirm this is large enough / actually needed." },
+    "NTEXT":            { "target": "VARCHAR", "fixed_args": "16777216", "review": "NTEXT is deprecated in SQL Server. Mapped to Snowflake's max VARCHAR size (16MB); confirm this is large enough / actually needed." },
+
+    "DATETIME":         { "target": "TIMESTAMP" },
+    "DATETIME2":        { "target": "TIMESTAMP" },
+    "SMALLDATETIME":    { "target": "TIMESTAMP" },
+    "DATE":             { "target": "DATE" },
+    "TIME":             { "target": "TIME" },
+    "DATETIMEOFFSET":   { "target": "TIMESTAMP_TZ", "review": "DATETIMEOFFSET stores an explicit UTC offset per row. Snowflake TIMESTAMP_TZ stores an offset too but display/session-timezone behavior differs - verify downstream consumers." },
+
+    "DECIMAL":          { "target": "NUMBER", "carry_args": true },
+    "NUMERIC":          { "target": "NUMBER", "carry_args": true },
+    "MONEY":            { "target": "NUMBER", "fixed_args": "19,4", "review": "MONEY has no exact Snowflake equivalent; mapped to NUMBER(19,4) which matches SQL Server MONEY precision/scale. Confirm rounding behavior at the application layer." },
+    "SMALLMONEY":       { "target": "NUMBER", "fixed_args": "10,4", "review": "SMALLMONEY has no exact Snowflake equivalent; mapped to NUMBER(10,4) which matches SQL Server SMALLMONEY precision/scale." },
+    "FLOAT":            { "target": "FLOAT" },
+    "REAL":             { "target": "FLOAT", "review": "REAL (32-bit) and Snowflake FLOAT (64-bit double) have different precision. Confirm precision loss/gain is acceptable." },
+
+    "UNIQUEIDENTIFIER": { "target": "VARCHAR", "fixed_args": "36", "review": "No native UUID/GUID type in Snowflake. Mapped to VARCHAR(36) to hold the string form of the GUID. If uniqueness/generation logic (NEWID()) is relied on, re-implement using UUID_STRING()." },
+
+    "VARBINARY":        { "target": "BINARY", "carry_args": true },
+    "BINARY":           { "target": "BINARY", "carry_args": true },
+    "IMAGE":             { "target": "BINARY", "fixed_args": "8388608", "review": "IMAGE is deprecated in SQL Server. Mapped to BINARY(8388608) (Snowflake's max BINARY size); confirm actual data size requirements." },
+
+    "XML":              { "target": "VARIANT", "review": "Snowflake has no native XML type. Mapped to VARIANT; XML must be parsed/loaded as text or converted to JSON/semi-structured data at load time." },
+    "SQL_VARIANT":       { "target": "VARIANT", "review": "SQL_VARIANT (mixed runtime type) has no direct Snowflake equivalent. Mapped to VARIANT; validate that all historical values convert cleanly." },
+    "GEOGRAPHY":         { "target": "GEOGRAPHY", "review": "Snowflake GEOGRAPHY uses WGS84/GeoJSON semantics which differ from SQL Server's GEOGRAPHY type (SRID handling, methods available). Validate spatial functions used downstream." },
+    "GEOMETRY":          { "target": "GEOMETRY", "review": "Snowflake GEOMETRY semantics differ from SQL Server GEOMETRY (planar, SRID handling, methods available). Validate spatial functions used downstream." },
+    "HIERARCHYID":       { "target": null, "review": "HIERARCHYID has no Snowflake equivalent. Typically re-modeled as a path VARCHAR or an adjacency-list pattern. Manual redesign required." },
+    "ROWVERSION":        { "target": null, "review": "ROWVERSION/TIMESTAMP (SQL Server auto-updating row-version column) has no Snowflake equivalent. Consider a trigger-less pattern such as a METADATA$ pseudo-column, a manually maintained UPDATED_AT TIMESTAMP, or STREAMS for change tracking." },
+    "TIMESTAMP":         { "target": null, "review": "In SQL Server, a column typed TIMESTAMP (not to be confused with the SQL standard datetime meaning) is a synonym for ROWVERSION - an auto-updating binary version stamp, not a date/time value. It has no Snowflake equivalent. Confirm whether this column is actually a datetime (then it should have been DATETIME/DATETIME2) or a true rowversion column before converting." },
+
+    "CURSOR":            { "target": null, "review": "CURSOR is not a storable column type; it cannot exist as a table column in Snowflake either. Remove or redesign." }
+  },
+
+  "function_mappings": {
+    "_comment": "Applied to DEFAULT expressions and other expressions found in the DDL. Matching is case-insensitive and regex-based on the function name/pattern shown as key.",
+
+    "GETDATE\\s*\\(\\s*\\)":         { "replacement": "CURRENT_TIMESTAMP()" },
+    "SYSDATETIME\\s*\\(\\s*\\)":     { "replacement": "CURRENT_TIMESTAMP()" },
+    "CURRENT_TIMESTAMP(?!\\s*\\()":  { "replacement": "CURRENT_TIMESTAMP()" },
+    "GETUTCDATE\\s*\\(\\s*\\)":      { "replacement": "CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())", "review": "GETUTCDATE() returns UTC based on the OS clock regardless of session settings. The Snowflake replacement CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP()) depends on the session TIMEZONE parameter - verify the account/session timezone is set as expected, or use SYSDATE() if the account default is already UTC." },
+    "SYSUTCDATETIME\\s*\\(\\s*\\)":  { "replacement": "CONVERT_TIMEZONE('UTC', CURRENT_TIMESTAMP())", "review": "SYSUTCDATETIME() returns UTC based on the OS clock. Verify the Snowflake session TIMEZONE parameter matches expectations." },
+    "NEWID\\s*\\(\\s*\\)":           { "replacement": "UUID_STRING()", "review": "NEWID() and UUID_STRING() use different UUID generation algorithms (SQL Server: proprietary GUID; Snowflake: UUIDv4). Values will not match/collide across systems and any code relying on GUID structure/sortability (e.g. NEWSEQUENTIALID patterns) must be re-reviewed." },
+    "NEWSEQUENTIALID\\s*\\(\\s*\\)": { "replacement": "UUID_STRING()", "review": "NEWSEQUENTIALID() produces sequential GUIDs for index-friendliness, a concept Snowflake's micro-partition storage doesn't need in the same way. Mapped to UUID_STRING(); confirm no code depends on sequential ordering of the generated ids." },
+    "ISNULL\\s*\\(":                 { "replacement": "COALESCE(" },
+    "SUSER_SNAME\\s*\\(\\s*\\)":     { "replacement": null, "review": "SUSER_SNAME() (current SQL Server login name) has no Snowflake equivalent. Use CURRENT_USER() if the intent is the current session's user." }
+  },
+
+  "identity_syntax": {
+    "pattern": "IDENTITY\\s*\\(\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*\\)",
+    "default_pattern": "IDENTITY\\b(?!\\s*\\()",
+    "template_with_args": "AUTOINCREMENT START {seed} INCREMENT {increment}",
+    "template_default": "AUTOINCREMENT"
+  },
+
+  "bit_literal_defaults": {
+    "_comment": "How to render DEFAULT literal values for a column whose SQL Server type was BIT (now BOOLEAN).",
+    "0": "FALSE",
+    "1": "TRUE",
+    "(0)": "FALSE",
+    "(1)": "TRUE",
+    "((0))": "FALSE",
+    "((1))": "TRUE"
+  },
+
+  "schema_handling": {
+    "strip_schemas": ["dbo"],
+    "_comment": "Schemas in this list are SQL Server's default/system schema and are dropped, matching the worked example (dbo.Customer -> Customer). Any other schema is preserved as a Snowflake schema-qualified name (schema.table)."
+  },
+
+  "identifier_quoting": {
+    "sql_server_delimiters": ["[", "]"],
+    "snowflake_delimiter": "\"",
+    "_comment": "SQL Server [bracketed] identifiers become plain identifiers in Snowflake unless they collide with a reserved word or contain characters/case that require quoting, in which case they become \"double-quoted\"."
+  },
+
+  "reserved_words": [
+    "ACCOUNT","ALL","ALTER","AND","ANY","AS","BETWEEN","BY","CASE","CAST","CHECK",
+    "COLUMN","CONNECT","CONSTRAINT","CREATE","CROSS","CURRENT","CURRENT_DATE",
+    "CURRENT_TIME","CURRENT_TIMESTAMP","CURRENT_USER","DATABASE","DELETE","DISTINCT",
+    "DROP","ELSE","EXISTS","FALSE","FOLLOWING","FOR","FROM","FULL","GRANT","GROUP",
+    "GSCLUSTER","HAVING","ILIKE","IN","INCREMENT","INNER","INSERT","INTERSECT","INTO",
+    "IS","ISSUE","JOIN","LATERAL","LEFT","LIKE","LOCALTIME","LOCALTIMESTAMP","MINUS",
+    "NATURAL","NOT","NULL","OF","ON","OR","ORDER","ORGANIZATION","QUALIFY","REGEXP",
+    "REVOKE","RIGHT","RLIKE","ROW","ROWS","SAMPLE","SCHEMA","SELECT","SET","SOME",
+    "START","TABLE","TABLESAMPLE","THEN","TO","TRIGGER","TRUE","TRY_CAST","UNION",
+    "UNIQUE","UPDATE","USER","USING","VALUES","VIEW","WHEN","WHENEVER","WHERE","WITH"
+  ],
+
+  "unsupported_table_options": {
+    "_comment": "SQL Server clauses that are storage/engine directives with no Snowflake equivalent. Detected and stripped; each produces a manual-review note rather than being silently dropped.",
+    "patterns": [
+      { "regex": "\\bON\\s+\\[?PRIMARY\\]?", "reason": "Filegroup placement (ON [PRIMARY]) is a SQL Server physical-storage concept. Snowflake manages physical storage automatically; the clause is removed with no functional replacement." },
+      { "regex": "\\bTEXTIMAGE_ON\\s+\\[?\\w+\\]?", "reason": "TEXTIMAGE_ON filegroup placement is a SQL Server physical-storage concept with no Snowflake equivalent; removed." },
+      { "regex": "\\bWITH\\s*\\(\\s*[^)]*\\)", "reason": "Table WITH(...) options (e.g. FILLFACTOR, DATA_COMPRESSION, LOCK_ESCALATION) are SQL Server storage/engine settings with no Snowflake equivalent; removed." }
+    ]
+  },
+
+  "unsupported_column_attributes": {
+    "_comment": "Column-level modifiers that must be flagged for manual review rather than translated, because there is no reliable automatic equivalent.",
+    "patterns": [
+      { "regex": "\\bROWGUIDCOL\\b", "reason": "ROWGUIDCOL marks a column as the row's GUID for replication features Snowflake doesn't have. Removed; re-implement replication/merge logic explicitly if needed." },
+      { "regex": "\\bPERSISTED\\b", "reason": "PERSISTED (materialized computed column) has no Snowflake DDL equivalent. Recreate as a regular column populated by ETL, or as a view/materialized view expression." },
+      { "regex": "\\bSPARSE\\b", "reason": "SPARSE column storage optimization has no Snowflake equivalent (Snowflake's columnar storage already handles this automatically). Attribute removed, no action needed." },
+      { "regex": "\\bFILESTREAM\\b", "reason": "FILESTREAM (storing BLOBs on the filesystem) has no Snowflake equivalent. Store large binary objects in a stage instead and reference them by path/URL." },
+      { "regex": "\\bMASKED\\s+WITH\\s*\\([^)]*\\)", "reason": "Dynamic Data Masking (MASKED WITH...) is a SQL Server security feature. Snowflake's equivalent is a Dynamic Data Masking policy created separately via CREATE MASKING POLICY, not inline column DDL - recreate manually." },
+      { "regex": "\\bCOLLATE\\s+\\S+", "reason": "COLLATE specifies a SQL Server collation. Snowflake collation syntax and available collations differ; review whether case-sensitivity/accent-sensitivity behavior needs to be replicated with Snowflake's COLLATE clause." }
+    ]
+  },
+
+  "computed_column": {
+    "regex": "^\\s*(\\S+)\\s+AS\\s+\\(.+\\)",
+    "reason": "Computed column (col AS (expression)) definitions use SQL Server expression syntax and may reference functions with no Snowflake equivalent. Snowflake supports virtual/computed columns with different syntax (col TYPE AS (expression)) - the expression itself must be manually reviewed and ported, and a data type must be supplied explicitly."
+  },
+
+  "constraint_notes": {
+    "check": "Snowflake accepts CHECK constraint syntax but does NOT enforce it (metadata only, per Snowflake documentation). If the CHECK is relied on for data integrity, enforce it in the load/ETL layer instead.",
+    "foreign_key": "Snowflake accepts PRIMARY KEY / FOREIGN KEY / UNIQUE constraint syntax but does NOT enforce them by default (informational/metadata only, used by the query optimizer). Application-level or ETL-level enforcement is required if referential integrity must be guaranteed.",
+    "default_constraint_name": "SQL Server named DEFAULT constraints (CONSTRAINT DF_x DEFAULT ...) are converted to plain Snowflake DEFAULT clauses, since Snowflake does not support naming default constraints separately."
+  }
+}
