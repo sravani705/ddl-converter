@@ -16,6 +16,13 @@ import re
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
+# Optional SQLGlot import for enhanced validation
+try:
+    from sqlglot_helpers import validate_sql as sqlglot_validate, format_sql as sqlglot_format
+    SQLGLOT_AVAILABLE = True
+except ImportError:
+    SQLGLOT_AVAILABLE = False
+
 RULES_PATH = os.path.join(os.path.dirname(__file__), "rules.json")
 with open(RULES_PATH, "r") as f:
     RULES = json.load(f)

@@ -3,7 +3,7 @@ import json
 import requests
 import streamlit as st
 
-from converter import convert
+from converter_to_snowflake import convert_to_snowflake
 
 # Optional imports
 try:
@@ -58,12 +58,30 @@ def validate_conversion(result) -> (bool, list):
 
 def main():
     st.set_page_config(page_title="DDL Converter — Streamlit UI", layout="wide")
-    st.title("SQL Server → Snowflake DDL — Interactive Converter")
+    st.title("Multi-Source SQL → Snowflake DDL Converter")
 
     left, right = st.columns([2, 3])
 
     with left:
-        st.subheader("Input (SQL Server DDL)")
+        st.subheader("Source & Input")
+
+        # Source dialect selector
+        source_dialect = st.selectbox(
+            "Source SQL Dialect",
+            options=["tsql", "mysql", "oracle", "postgresql", "db2", "hana"],
+            format_func=lambda x: {
+                "tsql": "SQL Server (T-SQL)",
+                "mysql": "MySQL",
+                "oracle": "Oracle Database",
+                "postgresql": "PostgreSQL",
+                "db2": "IBM DB2",
+                "hana": "SAP HANA"
+            }.get(x, x),
+            index=0,
+            help="Select the source database dialect"
+        )
+
+        st.markdown(f"**Target:** Snowflake (fixed)")
 
         # Allow choosing a sample from test_cases if available
         sample_sql = ""
@@ -77,8 +95,8 @@ def main():
         except Exception:
             sample_sql = ""
 
-        sql_text = st.text_area("SQL Server DDL", value=sample_sql, height=300)
-        run = st.button("Convert")
+        sql_text = st.text_area(f"Input DDL ({source_dialect.upper()})", value=sample_sql, height=300)
+        run = st.button("Convert to Snowflake")
 
         st.markdown("---")
         st.subheader("Options")
@@ -91,7 +109,7 @@ def main():
 
     if run and sql_text.strip():
         with st.spinner("Converting…"):
-            res = convert(sql_text)
+            res = convert_to_snowflake(sql_text, source_dialect=source_dialect)
 
         # Show converted DDL
         with right:
