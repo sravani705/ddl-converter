@@ -464,29 +464,31 @@
       }
     },
     "LONGTEXT": {
-      "tsql": {
-        "target": "VARCHAR",
-        "fixed_args": "MAX"
-      },
-      "mysql": {
-        "target": "LONGTEXT"
-      },
-      "oracle": {
-        "target": "CLOB"
-      },
-      "postgresql": {
-        "target": "TEXT"
-      },
-      "db2": {
-        "target": "CLOB"
-      },
-      "hana": {
-        "target": "NCLOB"
-      },
-      "snowflake": {
-        "target": "VARCHAR",
-        "review": "LONGTEXT mapped to Snowflake VARCHAR (max 16MB)."
-      }
+      "tsql": {"target": "VARCHAR", "fixed_args": "MAX"},
+      "mysql": {"target": "VARCHAR"},
+      "oracle": {"target": "CLOB"},
+      "postgresql": {"target": "TEXT"},
+      "db2": {"target": "CLOB"},
+      "hana": {"target": "NCLOB"},
+      "snowflake": {"target": "VARCHAR", "review": "LONGTEXT mapped to Snowflake VARCHAR (max 16MB)."}
+    },
+    "LONGBLOB": {
+      "tsql": {"target": "VARBINARY", "carry_args": true},
+      "mysql": {"target": "BINARY"},
+      "oracle": {"target": "BLOB"},
+      "postgresql": {"target": "BYTEA"},
+      "db2": {"target": "BLOB"},
+      "hana": {"target": "BLOB"},
+      "snowflake": {"target": "BINARY", "review": "LONGBLOB mapped to Snowflake BINARY."}
+    },
+    "DATETIME": {
+      "tsql": {"target": "DATETIME"},
+      "mysql": {"target": "TIMESTAMP_NTZ"},
+      "oracle": {"target": "TIMESTAMP"},
+      "postgresql": {"target": "TIMESTAMP"},
+      "db2": {"target": "TIMESTAMP"},
+      "hana": {"target": "TIMESTAMP"},
+      "snowflake": {"target": "TIMESTAMP_NTZ", "review": "DATETIME mapped to Snowflake TIMESTAMP_NTZ."}
     },
     "CLOB": {
       "tsql": {
@@ -1135,34 +1137,13 @@
       }
     },
     "DECIMAL": {
-      "tsql": {
-        "target": "DECIMAL",
-        "carry_args": true
-      },
-      "mysql": {
-        "target": "DECIMAL",
-        "carry_args": true
-      },
-      "oracle": {
-        "target": "NUMBER",
-        "carry_args": true
-      },
-      "postgresql": {
-        "target": "NUMERIC",
-        "carry_args": true
-      },
-      "db2": {
-        "target": "DECIMAL",
-        "carry_args": true
-      },
-      "hana": {
-        "target": "DECIMAL",
-        "carry_args": true
-      },
-      "snowflake": {
-        "target": "NUMBER",
-        "carry_args": true
-      }
+        "hana": { "target": "NUMBER", "carry_args": true },
+        "snowflake": { "target": "NUMBER", "carry_args": true },
+        "tsql": { "target": "DECIMAL", "carry_args": true },
+        "mysql": { "target": "DECIMAL", "carry_args": true },
+        "oracle": { "target": "NUMBER", "carry_args": true },
+        "postgresql": { "target": "DECIMAL", "carry_args": true },
+        "db2": { "target": "DECIMAL", "carry_args": true }
     },
     "NUMERIC": {
       "tsql": {

@@ -188,7 +188,7 @@ def _convert_create_table(
     """Convert CREATE TABLE statements from source to target dialect."""
     
     # Locate all CREATE TABLE ... ( headers
-    header_pattern = r"CREATE\s+TABLE\s+([^\(]+?)\s*\("
+    header_pattern = r"CREATE\s+(?:COLUMN\s+)?TABLE\s+([^\(]+?)\s*\("
     matches = list(re.finditer(header_pattern, sql_text, re.IGNORECASE))
     if not matches:
         return sql_text
@@ -335,14 +335,20 @@ def _convert_column(
                 converted_type += f"({target_info['fixed_args']})"
             elif target_info.get("carry_args") and type_args:
                 converted_type += f"({type_args})"
+
+            # Log transformation if type changed
+            original_type_str = base_type + (f"({type_args})" if type_args else "")
+            if original_type_str.upper() != converted_type.upper():
+                result.add_transform(f"Column '{col_name}': converted type '{original_type_str}' to '{converted_type}'")
+
             if target_info.get("review"):
                 result.add_review(f"Column '{col_name}' type '{base_type}': {target_info['review']}")
 
     # Convert identity syntax
-    rest = _convert_identity_syntax(rest, source_dialect, target_dialect, result)
+    rest = _convert_identity_syntax(rest, source_dialect, target_dialect, result, col_name)
 
     # Convert DEFAULT expressions
-    rest = _convert_default_expressions(rest, source_dialect, target_dialect, result)
+    rest = _convert_default_expressions(rest, source_dialect, target_dialect, result, col_name)
 
     return f"    {col_name} {converted_type}{rest}"
 
@@ -380,7 +386,8 @@ def _convert_identity_syntax(
     rest: str,
     source_dialect: str,
     target_dialect: str,
-    result: ConversionResult
+    result: ConversionResult,
+    col_name: str = ""
 ) -> str:
     """Convert IDENTITY/AUTO_INCREMENT/SEQUENCE syntax."""
     identity_rules = RULES.get("identity_syntax", {})
@@ -416,7 +423,8 @@ def _convert_identity_syntax(
                 replacement = ""
 
             rest = re.sub(pattern, replacement, rest, flags=re.IGNORECASE)
-            result.add_transform(f"Converted IDENTITY/AUTO_INCREMENT syntax from {source_dialect} to {target_dialect}")
+            prefix = f"Column '{col_name}': " if col_name else ""
+            result.add_transform(f"{prefix}converted IDENTITY/AUTO_INCREMENT syntax from {source_dialect} to {target_dialect}")
 
     return rest
 
@@ -425,7 +433,8 @@ def _convert_default_expressions(
     rest: str,
     source_dialect: str,
     target_dialect: str,
-    result: ConversionResult
+    result: ConversionResult,
+    col_name: str = ""
 ) -> str:
     """Convert DEFAULT expressions and functions."""
     function_mappings = RULES.get("function_mappings", {})
@@ -444,7 +453,8 @@ def _convert_default_expressions(
                 replacement_text = target_func.get("replacement", "")
                 if replacement_text:
                     rest = re.sub(pattern, replacement_text, rest, flags=re.IGNORECASE)
-                    result.add_transform(f"Converted function '{func_name}' to '{replacement_text}'")
+                    prefix = f"Column '{col_name}': " if col_name else ""
+                    result.add_transform(f"{prefix}converted function '{func_name}' to '{replacement_text}'")
                 if target_func.get("review"):
                     result.add_review(target_func["review"])
 
