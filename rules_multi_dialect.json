@@ -442,8 +442,7 @@
         "review": "TEXT is deprecated; mapped to max VARCHAR."
       },
       "mysql": {
-        "target": "VARCHAR",
-        "review": "MySQL TEXT mapped to Snowflake VARCHAR"
+        "target": "TEXT"
       },
       "oracle": {
         "target": "CLOB",
@@ -461,7 +460,7 @@
       },
       "snowflake": {
         "target": "VARCHAR",
-        "fixed_args": "16777216"
+        "review": "TEXT mapped to Snowflake VARCHAR (max 16MB)."
       }
     },
     "LONGTEXT": {
@@ -470,8 +469,7 @@
         "fixed_args": "MAX"
       },
       "mysql": {
-        "target": "VARCHAR",
-        "review": "LONGTEXT mapped to VARCHAR (may require large size)."
+        "target": "LONGTEXT"
       },
       "oracle": {
         "target": "CLOB"
@@ -487,7 +485,7 @@
       },
       "snowflake": {
         "target": "VARCHAR",
-        "fixed_args": "16777216"
+        "review": "LONGTEXT mapped to Snowflake VARCHAR (max 16MB)."
       }
     },
     "CLOB": {
@@ -1953,6 +1951,138 @@
       "snowflake": {
         "target": null,
         "review": "ROWVERSION has no equivalent; use STREAMS or manual tracking."
+      }
+    },
+    "MEDIUMTEXT": {
+      "tsql": {
+        "target": "VARCHAR",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "MEDIUMTEXT"
+      },
+      "oracle": {
+        "target": "CLOB"
+      },
+      "postgresql": {
+        "target": "TEXT"
+      },
+      "db2": {
+        "target": "CLOB"
+      },
+      "hana": {
+        "target": "NCLOB"
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "review": "MEDIUMTEXT mapped to Snowflake VARCHAR (max 16MB)."
+      }
+    },
+    "TINYTEXT": {
+      "tsql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "TINYTEXT"
+      },
+      "oracle": {
+        "target": "VARCHAR2",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "db2": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARCHAR",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "VARCHAR",
+        "carry_args": true
+      }
+    },
+    "LONGBLOB": {
+      "tsql": {
+        "target": "VARBINARY",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "LONGBLOB"
+      },
+      "oracle": {
+        "target": "BLOB"
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "BLOB"
+      },
+      "hana": {
+        "target": "BLOB"
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "review": "LONGBLOB mapped to Snowflake BINARY (max 8MB)."
+      }
+    },
+    "MEDIUMBLOB": {
+      "tsql": {
+        "target": "VARBINARY",
+        "fixed_args": "MAX"
+      },
+      "mysql": {
+        "target": "MEDIUMBLOB"
+      },
+      "oracle": {
+        "target": "BLOB"
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "BLOB"
+      },
+      "hana": {
+        "target": "BLOB"
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "review": "MEDIUMBLOB mapped to Snowflake BINARY (max 8MB)."
+      }
+    },
+    "TINYBLOB": {
+      "tsql": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "mysql": {
+        "target": "TINYBLOB"
+      },
+      "oracle": {
+        "target": "RAW",
+        "carry_args": true
+      },
+      "postgresql": {
+        "target": "BYTEA"
+      },
+      "db2": {
+        "target": "VARCHAR FOR BIT DATA",
+        "carry_args": true
+      },
+      "hana": {
+        "target": "VARBINARY",
+        "carry_args": true
+      },
+      "snowflake": {
+        "target": "BINARY",
+        "carry_args": true
       }
     }
   },
